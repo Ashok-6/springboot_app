@@ -1,0 +1,84 @@
+package com.pg.user.service;
+
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Service;
+
+import com.pg.user.dto.PaymentDto;
+import com.pg.user.dto.UserDto;
+import com.pg.user.entity.Payment;
+import com.pg.user.feign.AdminClient;
+import com.pg.user.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public  class PaymentServiceImpl implements PaymentService {
+
+    private final PaymentRepository paymentRepository;
+    private final AdminClient adminClient; // ✅ Feign client to admin service
+
+    @Override
+    public PaymentDto createPayment(Long userId, String paymentMethod) {
+        // ✅ Fetch user details from Admin/User service
+        UserDto user = adminClient.getUserById(userId);
+        if (user == null) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+
+        // ✅ Calculate total = monthly rent + electricity bill
+        double rent = user.getUserMonthlyRent() != null ? user.getUserMonthlyRent() : 0.0;
+        double ebill = user.getUserEbill() != null ? user.getUserEbill() : 0.0;
+        double totalAmount = rent + ebill;
+
+        // ✅ Create and save payment entity
+        Payment payment = Payment.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .amount(totalAmount)
+                .paymentMethod(paymentMethod)
+                .paymentDate(LocalDateTime.now())
+                .build();
+
+        Payment saved = paymentRepository.save(payment);
+        return mapToDto(saved);
+    }
+
+    /*
+    @Override
+    public PaymentDto getPaymentById(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + paymentId));
+        return mapToDto(payment);
+    }
+
+    @Override
+    public List<PaymentDto> getAllPayments() {
+        return paymentRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+    */
+    
+    @Override
+    public PaymentDto getPaymentById(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + paymentId));
+        return mapToDto(payment);
+    }
+
+
+    // ✅ Mapping helper
+    private PaymentDto mapToDto(Payment payment) {
+        return PaymentDto.builder()
+                .paymentId(payment.getPaymentId())
+                .userId(payment.getUserId())
+                .userName(payment.getUserName())
+                .amount(payment.getAmount())
+                .paymentMethod(payment.getPaymentMethod())
+                .paymentDate(payment.getPaymentDate())
+                .build();
+    }
+}

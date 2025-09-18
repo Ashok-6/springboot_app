@@ -1,0 +1,68 @@
+package com.pg.user.controller;
+
+import java.io.ByteArrayInputStream;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pg.user.dto.PaymentDto;
+import com.pg.user.entity.Invoice;
+import com.pg.user.service.InvoiceService;
+import com.pg.user.service.PaymentService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/payments")
+@RequiredArgsConstructor
+public class PaymentController {
+
+    private final PaymentService paymentService;
+    private final InvoiceService invoiceService;
+
+    /**
+     * ✅ Create a new payment and save invoice.
+     */
+    @PostMapping("/{userId}")
+    public PaymentDto createPayment(@PathVariable Long userId,
+                                    @RequestParam String paymentMethod) {
+
+        // Create payment (amount calculated internally)
+        PaymentDto payment = paymentService.createPayment(userId, paymentMethod);
+
+        // Generate PDF invoice and save
+        ByteArrayInputStream bis = invoiceService.generateInvoice(payment);
+        invoiceService.saveInvoice(payment.getPaymentId(), bis,
+                "invoice-" + payment.getPaymentId() + ".pdf");
+
+        return payment;
+    }
+
+    /**
+     * ✅ Download saved invoice (from DB).
+     */
+    @GetMapping("/{id}/invoice/download")
+    public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
+        Invoice invoice = invoiceService.getInvoiceByPaymentId(id);
+
+        if (invoice == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=" + invoice.getFileName());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(new ByteArrayInputStream(invoice.getPdfData())));
+    }
+}

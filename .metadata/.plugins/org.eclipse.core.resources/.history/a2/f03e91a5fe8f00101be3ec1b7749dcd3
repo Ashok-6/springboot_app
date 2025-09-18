@@ -1,0 +1,72 @@
+package com.pg.user.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pg.user.dto.LoginRequest;
+import com.pg.user.dto.UserDto;
+import com.pg.user.entity.User;
+import com.pg.user.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
+	@RestController
+	@RequestMapping("/api/users")
+	@RequiredArgsConstructor
+	@CrossOrigin(origins = "http://localhost:5173")
+	public class UserController {
+
+	    private final UserService userService;
+
+	   
+	   /* @PostMapping("/login")
+	    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+	        return ResponseEntity.ok(userService.login(request.getUserName(), request.getPassword()));
+	    }*/
+	    @PostMapping("/login")
+	    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+	        User user = userRepository.findByUserName(request.getUserName())
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        // Check if plain password matches hashed password
+	        if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
+	            throw new RuntimeException("Invalid credentials");
+	        }
+
+	        // Map user to DTO
+	        UserDto dto = UserDto.builder()
+	                .userId(user.getUserId())
+	                .userName(user.getUserName())
+	                .userRoom(user.getUserRoom())
+	                .userAadhar(user.getUserAadhar())
+	                .userPlace(user.getUserPlace())
+	                .userMonthlyRent(user.getUserMonthlyRent())
+	                .userEbill(user.getUserEbill())
+	                .userMobile(user.getUserMobile())
+	                .build();
+
+	        return ResponseEntity.ok(dto);
+	    }
+
+
+	}
+
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

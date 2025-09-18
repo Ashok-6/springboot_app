@@ -1,0 +1,13 @@
+package com.pg.user.service;
+
+import com.pg.user.dto.UserDto;
+
+public interface UserService {
+    //User login(String userName, String password);
+	  UserDto login(String userName, String password);
+	
+	  
+	  
+	  //Optional<User> findByUserName(String userName);
+
+}

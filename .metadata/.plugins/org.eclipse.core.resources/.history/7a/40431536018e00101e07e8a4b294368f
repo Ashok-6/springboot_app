@@ -1,0 +1,83 @@
+package com.pg.payment.controller;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.pg.payment.dto.PaymentDto;
+import com.pg.payment.service.PaymentService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/payments")
+@RequiredArgsConstructor
+public class PaymentController {
+
+    private final PaymentService paymentService;
+
+    /**
+     * Download invoice PDF for a specific payment
+     */
+    @GetMapping("/{id}/invoice")
+    public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
+        PaymentDto payment = paymentService.getPaymentById(id);
+
+        ByteArrayInputStream bis = generateInvoice(payment);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=invoice-" + id + ".pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(bis));
+    }
+
+    /**
+     * Generate PDF invoice in memory
+     */
+    private ByteArrayInputStream generateInvoice(PaymentDto payment) {
+        Document document = new Document();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            Font header = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+            Font body = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+            document.add(new Paragraph("PG Hostel - Rent Invoice", header));
+            document.add(new Paragraph("-----------------------------"));
+
+            document.add(new Paragraph("Invoice No: P-" + payment.getPaymentId(), body));
+            document.add(new Paragraph("User ID: " + payment.getUserId(), body));
+            document.add(new Paragraph("Amount Paid: ₹ " + payment.getAmount(), body));
+            document.add(new Paragraph("Date: " + payment.getPaymentDate(), body));
+            document.add(new Paragraph("Mode: " + payment.getPaymentMethod(), body));
+
+            document.add(new Paragraph("-----------------------------"));
+            document.add(new Paragraph("Thank you for your payment!", body));
+
+            document.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+}

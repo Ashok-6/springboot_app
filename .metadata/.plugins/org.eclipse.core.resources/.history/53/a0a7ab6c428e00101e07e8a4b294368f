@@ -1,0 +1,58 @@
+package com.pg.payment.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.pg.payment.dto.PaymentDto;
+import com.pg.payment.entity.Payment;
+import com.pg.payment.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentServiceImpl implements PaymentService {
+
+    private final PaymentRepository paymentRepository;
+
+    @Override
+    public PaymentDto createPayment(Long userId, String paymentMethod, Double amount) {
+        Payment payment = Payment.builder()
+                .userId(userId)
+                .amount(amount)
+                .paymentMethod(paymentMethod)
+                .paymentDate(LocalDateTime.now())
+                .build();
+
+        Payment saved = paymentRepository.save(payment);
+        return mapToDto(saved);
+    }
+
+    @Override
+    public PaymentDto getPaymentById(Long id) {
+        return paymentRepository.findById(id)
+                .map(this::mapToDto)
+                .orElseThrow(() -> new RuntimeException("Payment not found with id " + id));
+    }
+
+    @Override
+    public List<PaymentDto> getAllPayments() {
+        return paymentRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    private PaymentDto mapToDto(Payment payment) {
+        return PaymentDto.builder()
+                .paymentId(payment.getPaymentId())
+                .userId(payment.getUserId())
+                .amount(payment.getAmount())
+                .paymentMethod(payment.getPaymentMethod())
+                .paymentDate(payment.getPaymentDate())
+                .build();
+    }
+}

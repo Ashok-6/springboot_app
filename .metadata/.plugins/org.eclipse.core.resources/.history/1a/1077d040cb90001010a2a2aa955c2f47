@@ -1,0 +1,75 @@
+package com.pg.admin.service;
+
+
+
+
+import java.util.List;
+
+import com.pg.admin.dto.UserDto;
+import com.pg.admin.entity.User;
+
+public interface UserService {
+
+    // ✅ Create a new user
+    UserDto createUser(UserDto userDto);
+
+    // ✅ Get a user by ID
+    UserDto getUserById(Long id);
+
+    // ✅ Update a user
+    UserDto updateUser(Long id, UserDto userDto);
+
+    // ✅ Delete a user
+    void deleteUser(Long id);
+
+    // ✅ Get all users
+    List<UserDto> getAllUsers();
+
+    // ✅ Get user by mobile
+    UserDto getUserByMobile(String mobile);
+
+    // ✅ Update electricity bill and reset payment status
+    UserDto updateUserEbill(Long id, Double ebill);
+    
+    
+    // ✅ add this new method
+    UserDto updatePaymentStatus(Long id, boolean status);
+    
+    User updateBill(Long id, double ebill);
+}
+
+
+
+
+
+
+
+
+
+
+//import java.util.List;
+//
+//import com.pg.admin.dto.UserDto;
+//
+//public interface UserService {
+//
+//	UserDto createUser(UserDto userDto);
+//
+//	UserDto getUserById(Long userId);
+//
+//	List<UserDto> getAllUsers();
+//
+//	UserDto updateUser(Long userId, UserDto dto);
+//
+//	void deleteUser(Long userId);
+//
+//	UserDto getUserByMobile(String mobile);
+//
+//	UserDto updateUserEbill(Long id, Double ebill);
+//	
+//	
+////	 // Add this
+////    User markBillPaid(Long userId); // set lastPaymentDate to now
+////    
+////    User markBillPaid(Long id, String method);
+//}

@@ -1,0 +1,32 @@
+package com.pg.admin.dto;
+
+
+import com.pg.admin.entity.Role;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoginRequest {
+    private String adminName;
+    private String password;
+    private Role role;   // added role field
+}
+
+
+/*
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoginRequest {
+    private String adminName;
+    private String password;
+}
+*/

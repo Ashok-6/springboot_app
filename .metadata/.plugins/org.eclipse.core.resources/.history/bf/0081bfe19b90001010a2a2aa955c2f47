@@ -1,0 +1,328 @@
+package com.pg.admin.controller;
+
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pg.admin.dto.UserDto;
+import com.pg.admin.entity.User;
+import com.pg.admin.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/admin/users")
+@CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    /**
+     * Create a new user
+     * POST /api/admin/users
+     */
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.createUser(userDto));
+    }
+
+    /**
+     * Get a user by ID
+     * GET /api/admin/users/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    /**
+     * Update an existing user
+     * PUT /api/admin/users/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.updateUser(id, userDto));
+    }
+
+    /**
+     * Delete a user by ID
+     * DELETE /api/admin/users/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get all users
+     * GET /api/admin/users
+     */
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    /**
+     * Get a user by mobile number
+     * GET /api/admin/users/mobile/{mobile}
+     */
+    @GetMapping("/mobile/{mobile}")
+    public ResponseEntity<UserDto> getUserByMobile(@PathVariable String mobile) {
+        return ResponseEntity.ok(userService.getUserByMobile(mobile));
+    }
+
+    /**
+     * Update only electricity bill for a user
+     * PATCH /api/admin/users/{id}/ebill?ebill={value}
+     *
+    @PatchMapping("/{id}/ebill")
+    public ResponseEntity<Object> updateEbill(@PathVariable Long id, @RequestParam Double ebill) {
+        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+    }*/
+    
+ // PATCH - update only electricity bill
+    @PatchMapping("/{id}/ebill")
+    public ResponseEntity<UserDto> updateUserEbill(
+            @PathVariable Long id,
+            @RequestParam Double ebill) {
+
+        UserDto updatedUser = userService.updateUserEbill(id, ebill);
+        return ResponseEntity.ok(updatedUser);
+    }
+  
+
+    /**
+     * Get all allocated rooms
+     * GET /api/admin/users/rooms
+     */
+    @GetMapping("/rooms")
+    public ResponseEntity<List<String>> getAllocatedRooms() {
+        List<String> allocatedRooms = userService.getAllUsers()
+            .stream()
+            .map(UserDto::getUserRoom)  // Use UserDto, not entity directly
+            .toList();
+        return ResponseEntity.ok(allocatedRooms);
+    }
+    
+    // Mark bill as paid
+    @PostMapping("/{id}/pay")
+    public UserDto payBill(@PathVariable Long id) {
+        User user = userService.markBillPaid(id);
+        return convertToDto(user);
+    }
+
+    // Convert entity to DTO
+    private UserDto convertToDto(User user) {
+        UserDto dto = new UserDto();
+        dto.setUserId(user.getUserId());
+        dto.setUserName(user.getUserName());
+        dto.setUserRoom(user.getUserRoom());
+        dto.setUserMobile(user.getUserMobile());
+        dto.setUserEbill(user.getUserEbill());
+        dto.setLastPaymentDate(user.getLastPaymentDate());
+        return dto;
+    }
+    
+    
+    @PostMapping("/pay/{userId}")
+    public ResponseEntity<User> makePayment(
+            @PathVariable Long userId,
+            @RequestParam String method) {
+
+        User updatedUser = paymentService.makePayment(userId, method);
+        return ResponseEntity.ok(updatedUser);
+    }
+    
+    
+}
+
+
+
+
+
+
+
+
+
+//
+//import java.util.List;
+//
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.web.bind.annotation.CrossOrigin;
+//import org.springframework.web.bind.annotation.DeleteMapping;
+//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.PatchMapping;
+//import org.springframework.web.bind.annotation.PathVariable;
+//import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.PutMapping;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.RestController;
+//
+//import com.pg.admin.dto.UserDto;
+//import com.pg.admin.entity.User;
+//import com.pg.admin.service.UserService;
+//
+//import lombok.RequiredArgsConstructor;
+//
+//@RestController
+//@RequestMapping("/api/admin/users")
+//@CrossOrigin(origins = "http://localhost:5173")
+//@RequiredArgsConstructor
+//public class UserController {
+//
+//    private final UserService userService;
+//
+//    /**
+//     * Create a new user
+//     * Endpoint: POST /api/user
+//     * @param userDto - user details from request body
+//     * @return created user with generated ID
+//     */
+//    @PostMapping
+//    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+//        return ResponseEntity.ok(userService.createUser(userDto));
+//    }
+//
+//    /**
+//     * Get a user by ID
+//     * Endpoint: GET /api/user/{id}
+//     * @param id - user ID
+//     * @return user details
+//     */
+//    @GetMapping("/{id}")
+//    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+//        return ResponseEntity.ok(userService.getUserById(id));
+//    }
+//
+//    /**
+//     * Update an existing user
+//     * Endpoint: PUT /api/user/{id}
+//     * @param id - user ID
+//     * @param userDto - updated user details
+//     * @return updated user
+//     */
+//    @PutMapping("/{id}")
+//    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+//        return ResponseEntity.ok(userService.updateUser(id, userDto));
+//    }
+//
+//    /**
+//     * Delete a user by ID
+//     * Endpoint: DELETE /api/user/{id}
+//     * @param id - user ID
+//     * @return no content response
+//     */
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+//        userService.deleteUser(id);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    /**
+//     * Get all users
+//     * Endpoint: GET /api/user
+//     * @return list of all users
+//     */
+//    @GetMapping
+//    public ResponseEntity<List<UserDto>> getAllUsers() {
+//        return ResponseEntity.ok(userService.getAllUsers());
+//    }
+//
+//    /**
+//     * Get a user by mobile number
+//     * Endpoint: GET /api/user/mobile/{mobile}
+//     * @param mobile - user mobile number
+//     * @return user details
+//     */
+//    @GetMapping("/mobile/{mobile}")
+//    public ResponseEntity<UserDto> getUserByMobile(@PathVariable String mobile) {
+//        return ResponseEntity.ok(userService.getUserByMobile(mobile));
+//    }
+//
+//    /**
+//     * Update only electricity bill for a user
+//     * Endpoint: PATCH /api/user/{id}/ebill?ebill={value}
+//     * @param id - user ID
+//     * @param ebill - new electricity bill value
+//     * @return updated user with new ebill
+//     */
+//    @PatchMapping("/{id}/ebill")
+//    public ResponseEntity<Object> updateEbill(@PathVariable Long id, @RequestParam Double ebill) {
+//        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+//    }
+//    
+//}
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    /*/ Create user
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto dto,
+                                              @RequestParam String password) {
+        return ResponseEntity.ok(userService.createUser(dto, password));
+    }
+
+    // Get user by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    // Get all users
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    // Update user
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id,
+                                              @RequestBody UserDto dto) {
+        return ResponseEntity.ok(userService.updateUser(id, dto));
+    }
+
+    // Delete user
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // Update user electricity bill
+    @PatchMapping("/{id}/ebill")
+    public ResponseEntity<UserDto> updateUserEbill(@PathVariable Long id,
+                                                   @RequestParam Double ebill) {
+        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+    }
+}*/

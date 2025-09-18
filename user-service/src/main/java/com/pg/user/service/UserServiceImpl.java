@@ -1,0 +1,118 @@
+package com.pg.user.service;
+
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.pg.user.dto.UserDto;
+import com.pg.user.entity.User;
+import com.pg.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
+	
+
+	    private final UserRepository userRepository;
+	    private final PasswordEncoder passwordEncoder;
+
+	    @Override
+	    public UserDto login(String userName, String rawPassword) {
+	        User user = userRepository.findByUserName(userName)
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+
+	        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
+	            throw new RuntimeException("Invalid username or password");
+	        }
+
+	        // Map to DTO (manual or ModelMapper)
+	        UserDto dto = new UserDto();
+	        dto.setUserId(user.getUserId());
+	        dto.setUserName(user.getUserName());
+	        dto.setUserRoom(user.getUserRoom());
+	        dto.setUserAadhar(user.getUserAadhar());
+	        dto.setUserPlace(user.getUserPlace());
+	        dto.setUserMonthlyRent(user.getUserMonthlyRent());
+	        dto.setUserEbill(user.getUserEbill());
+	        dto.setUserMobile(user.getUserMobile());
+	        return dto;
+	    }
+	}
+
+
+
+//    private final UserRepository userRepository;
+//    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//
+//    @Override
+//    public UserDto login(String userName, String rawPassword) {
+//        User user = userRepository.findByUserName(userName)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        // Compare raw password with hashed password in DB
+//        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
+//            throw new RuntimeException("Invalid credentials");
+//        }
+//
+//        // Map User entity to UserDto
+//        return UserDto.builder()
+//                .userId(user.getUserId())
+//                .userName(user.getUserName())
+//                .userRoom(user.getUserRoom())
+//                .userAadhar(user.getUserAadhar())
+//                .userPlace(user.getUserPlace())
+//                .userMonthlyRent(user.getUserMonthlyRent())
+//                .userEbill(user.getUserEbill())
+//                .userMobile(user.getUserMobile())
+//                .build();
+//    }
+//
+//	
+//}
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//import org.springframework.stereotype.Service;
+//
+//import com.pg.user.dto.UserDto;
+//import com.pg.user.entity.User;
+//import com.pg.user.repository.UserRepository;
+//
+//import lombok.RequiredArgsConstructor;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class UserServiceImpl implements UserService {
+//
+//    private final UserRepository userRepository;
+//
+//    @Override
+//    public UserDto login(String userName, String password) {
+//        User user = userRepository.findByUserName(userName)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        if (!user.getUserPassword().equals(password)) {
+//            throw new RuntimeException("Invalid credentials");
+//        }
+//
+//        // ✅ Map to DTO (no password exposed)
+//        return UserDto.builder()
+//                .userId(user.getUserId())
+//                .userName(user.getUserName())
+//                .userRoom(user.getUserRoom())
+//                .userAadhar(user.getUserAadhar())
+//                .userPlace(user.getUserPlace())
+//                .userMobile(user.getUserMobile())
+//                .userMonthlyRent(user.getUserMonthlyRent())
+//                .userEbill(user.getUserEbill())
+//                .build();
+//    }
+//}

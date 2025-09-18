@@ -1,0 +1,19 @@
+package com.pg.user.service;
+
+import com.pg.user.dto.PaymentDto;
+
+public interface PaymentService {
+
+    // ✅ Create a new payment for a user
+    PaymentDto createPayment(Long userId, String paymentMethod);
+
+    // (Optional) Uncomment if you want these later
+    /*
+    PaymentDto getPaymentById(Long paymentId);
+
+    List<PaymentDto> getAllPayments();
+    
+    */
+    
+    PaymentDto getPaymentById(Long paymentId);  
+}

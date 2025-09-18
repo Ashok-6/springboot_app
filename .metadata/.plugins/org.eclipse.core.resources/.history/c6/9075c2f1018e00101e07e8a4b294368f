@@ -1,0 +1,49 @@
+//package com.pg.payment.util;
+//
+//import java.io.ByteArrayInputStream;
+//import java.io.ByteArrayOutputStream;
+//
+//import com.itextpdf.text.Document;
+//import com.itextpdf.text.Font;
+//import com.itextpdf.text.FontFactory;
+//import com.itextpdf.text.Paragraph;
+//import com.itextpdf.text.pdf.PdfWriter;
+//import com.pg.payment.dto.PaymentDto;
+//
+//public class InvoiceGenerator {
+//
+//    public static ByteArrayInputStream generateInvoice(PaymentDto payment) {
+//        Document document = new Document();
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//
+//        try {
+//            PdfWriter.getInstance(document, out);
+//            document.open();
+//
+//            Font header = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+//            Font body = FontFactory.getFont(FontFactory.HELVETICA, 12);
+//
+//            // Header
+//            document.add(new Paragraph("PG Hostel - Rent Invoice", header));
+//            document.add(new Paragraph("-----------------------------"));
+//
+//            // Payment Details
+//            document.add(new Paragraph("Invoice No: P-" + payment.getPaymentId(), body));
+//            document.add(new Paragraph("User ID: " + payment.getUserId(), body));
+//            document.add(new Paragraph("Amount Paid: ₹ " + payment.getAmount(), body));
+//            document.add(new Paragraph("Date: " + payment.getPaymentDate(), body));
+//            document.add(new Paragraph("Mode: " + payment.getPaymentMethod(), body));
+//
+//            // Footer
+//            document.add(new Paragraph("-----------------------------"));
+//            document.add(new Paragraph("Thank you for your payment!", body));
+//
+//            document.close();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return new ByteArrayInputStream(out.toByteArray());
+//    }
+//}

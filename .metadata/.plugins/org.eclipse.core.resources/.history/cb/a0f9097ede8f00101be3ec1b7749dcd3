@@ -1,0 +1,77 @@
+package com.pg.admin.service;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.pg.admin.dto.AdminDto;
+import com.pg.admin.dto.LoginRequest;
+import com.pg.admin.dto.LoginResponse;
+import com.pg.admin.entity.Admin;
+import com.pg.admin.entity.Role;
+import com.pg.admin.repository.AdminRepository;
+import com.pg.admin.security.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class AdminServiceImpl implements AdminService {
+
+    private final AdminRepository adminRepository;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public AdminDto register(AdminDto dto, String rawPassword) {
+        // Default role = ADMIN if not provided
+        Role role = dto.getRole() != null ? dto.getRole() : Role.ADMIN;
+
+        Admin admin = Admin.builder()
+                .adminName(dto.getAdminName())
+                .password(passwordEncoder.encode(rawPassword)) // ✅ secure hash
+                .role(role)
+                .build();
+
+        Admin saved = adminRepository.save(admin);
+
+        return AdminDto.builder()
+                .adminId(saved.getAdminId())
+                .adminName(saved.getAdminName())
+                .role(saved.getRole())
+                .build();
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        Admin admin = adminRepository.findByAdminName(request.getAdminName())
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        // ✅ match encoded password
+        if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        // generate token (include role in claims if you want RBAC)
+        String token = jwtUtil.generateToken(admin.getAdminName());
+
+        AdminDto dto = AdminDto.builder()
+                .adminId(admin.getAdminId())
+                .adminName(admin.getAdminName())
+                .role(admin.getRole())
+                .build();
+
+        return new LoginResponse(token, dto);
+    }
+
+    @Override
+    public AdminDto getAdminDetails(String username) {
+        Admin admin = adminRepository.findByAdminName(username)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        return AdminDto.builder()
+                .adminId(admin.getAdminId())
+                .adminName(admin.getAdminName())
+                .role(admin.getRole())
+                .build();
+    }
+}

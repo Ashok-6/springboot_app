@@ -1,0 +1,76 @@
+package com.pg.user.service;
+
+import java.awt.Font;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.format.DateTimeFormatter;
+
+import javax.swing.text.Document;
+
+import org.springframework.stereotype.Service;
+
+import com.pg.user.dto.PaymentDto;
+import com.pg.user.entity.Invoice;
+import com.pg.user.repository.InvoiceRepository;
+
+import jakarta.xml.bind.Element;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class InvoiceServiceImpl implements InvoiceService {
+
+    private final InvoiceRepository invoiceRepository;
+
+    @Override
+    public ByteArrayInputStream generateInvoice(PaymentDto payment) {
+        try {
+            Document document = new Document();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+            Paragraph title = new Paragraph("PG Payment Invoice", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+            document.add(Chunk.NEWLINE);
+
+            document.add(new Paragraph("Payment ID: " + payment.getPaymentId()));
+            document.add(new Paragraph("User ID: " + payment.getUserId()));
+            document.add(new Paragraph("Amount: ₹" + payment.getAmount()));
+            document.add(new Paragraph("Method: " + payment.getPaymentMethod()));
+
+            String formattedDate = payment.getPaymentDate() != null
+                    ? payment.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+                    : "N/A";
+            document.add(new Paragraph("Date: " + formattedDate));
+
+            document.close();
+            return new ByteArrayInputStream(out.toByteArray());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating invoice PDF", e);
+        }
+    }
+
+    @Override
+    public Invoice saveInvoice(Long paymentId, ByteArrayInputStream pdfStream, String fileName) {
+        try {
+            byte[] pdfBytes = pdfStream.readAllBytes();
+            Invoice invoice = Invoice.builder()
+                    .paymentId(paymentId)
+                    .fileName(fileName)
+                    .pdfData(pdfBytes)
+                    .build();
+            return invoiceRepository.save(invoice);
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving invoice", e);
+        }
+    }
+
+    @Override
+    public Invoice getInvoiceByPaymentId(Long paymentId) {
+        return invoiceRepository.findByPaymentId(paymentId);
+    }
+}

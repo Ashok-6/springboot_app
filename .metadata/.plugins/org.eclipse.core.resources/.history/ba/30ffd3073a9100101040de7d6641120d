@@ -1,0 +1,191 @@
+//package com.pg.admin.controller;
+
+
+
+package com.pg.admin.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pg.admin.dto.AdminDto;
+import com.pg.admin.service.AdminService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
+public class AdminController {
+
+    private final AdminService adminService;
+
+    /** 
+     * ✅ Register a new Admin or Manager
+     */
+    @PostMapping("/register")
+    public ResponseEntity<AdminDto> register(@RequestBody AdminDto request) {
+        AdminDto savedAdmin = adminService.register(request);
+        return ResponseEntity.ok(savedAdmin);
+    }
+
+    /**
+     * ✅ Get all admins
+     */
+    @GetMapping
+    public ResponseEntity<List<AdminDto>> getAllAdmins() {
+        List<AdminDto> admins = adminService.getAllAdmins();
+        return ResponseEntity.ok(admins);
+    }
+
+    /**
+     * ✅ Get single admin by ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<AdminDto> getAdminById(@PathVariable Long id) {
+        AdminDto admin = adminService.getAdminById(id);
+        return ResponseEntity.ok(admin);
+    }
+
+    /**
+     * ✅ Update admin details
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<AdminDto> updateAdmin(
+            @PathVariable Long id, 
+            @RequestBody AdminDto request) {
+        AdminDto updatedAdmin = adminService.updateAdmin(id, request);
+        return ResponseEntity.ok(updatedAdmin);
+    }
+
+    /**
+     * ✅ Delete admin by ID
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAdmin(@PathVariable Long id) {
+        adminService.deleteAdmin(id);
+        return ResponseEntity.ok("Admin with ID " + id + " deleted successfully.");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.web.bind.annotation.CrossOrigin;
+//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestHeader;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RestController;
+//
+//import com.pg.admin.dto.AdminDto;
+//import com.pg.admin.dto.LoginRequest;
+//import com.pg.admin.dto.LoginResponse;
+//import com.pg.admin.entity.Role;
+//import com.pg.admin.security.JwtUtil;
+//import com.pg.admin.service.AdminService;
+//
+//import lombok.RequiredArgsConstructor;
+//
+//@RestController
+//@RequestMapping("/api/admin")
+//@CrossOrigin(origins = "http://localhost:5173") // ✅ Allow React frontend
+//@RequiredArgsConstructor
+//public class AdminController {
+//
+//    private final AdminService adminService;
+//    private final JwtUtil jwtUtil;
+//
+//    /** defalt admin work
+//     * ✅ Register a new Admin
+//     * - By default, assigns role = ADMIN
+//     */
+//   /* @PostMapping("/register")
+//    public ResponseEntity<AdminDto> register(@RequestBody LoginRequest request) {
+//        AdminDto dto = AdminDto.builder()
+//                .adminName(request.getAdminName())
+//                .role(Role.ADMIN) // ✅ Default role
+//                .build();
+//
+//        AdminDto savedAdmin = adminService.register(dto, request.getPassword());
+//        return ResponseEntity.ok(savedAdmin);
+//    }*/
+//    
+//    
+//    /**
+//     * ✅ Register a new Admin or Manager
+//     * - Saves role as provided (ADMIN or MANAGER)
+//     * - Both roles have same access (handled via security config)
+//     */
+//    @PostMapping("/register")
+//    public ResponseEntity<AdminDto> register(@RequestBody LoginRequest request) {
+//        // Convert role string to enum safely
+//        Role selectedRole;
+//        try {
+//            // ✅ Apply toUpperCase() on the string before Role.valueOf
+//            selectedRole = Role.valueOf(request.getRole().toUpperCase());
+//        } catch (IllegalArgumentException e) {
+//            // Default to ADMIN if role is invalid
+//            selectedRole = Role.ADMIN;
+//        }
+//
+//        AdminDto dto = AdminDto.builder()
+//                .adminName(request.getAdminName())
+//                .role(selectedRole) // Save exactly what user selected
+//                .build();
+//
+//        AdminDto savedAdmin = adminService.register(dto, request.getPassword());
+//        return ResponseEntity.ok(savedAdmin);
+//    }
+//
+//
+//    
+//    
+//    
+//    
+//
+//    /**
+//     * ✅ Login & get JWT token
+//     */
+//    @PostMapping("/login")
+//    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+//        LoginResponse response = adminService.login(request);
+//        return ResponseEntity.ok(response);
+//    }
+//
+//    /**
+//     * ✅ Get current admin details using JWT
+//     */
+//    @GetMapping("/me")
+//    public ResponseEntity<AdminDto> getAdminDetails(@RequestHeader("Authorization") String token) {
+//        // Remove "Bearer " prefix if present
+//        String jwtToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+//        String username = jwtUtil.extractUsername(jwtToken);
+//
+//        AdminDto admin = adminService.getAdminDetails(username);
+//        return ResponseEntity.ok(admin);
+//    }
+//}

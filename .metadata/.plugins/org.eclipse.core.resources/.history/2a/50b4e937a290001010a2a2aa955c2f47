@@ -1,0 +1,102 @@
+package com.pg.admin.controller;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.pg.admin.dto.UserDto;
+import com.pg.admin.entity.User;
+import com.pg.admin.repository.UserRepository;
+import com.pg.admin.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/api/admin/users")
+@CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    // ✅ Create a new user
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.createUser(userDto));
+    }
+
+    // ✅ Get a user by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    // ✅ Update a user
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.updateUser(id, userDto));
+    }
+
+    // ✅ Delete a user
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ✅ Get all users
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    // ✅ Get user by mobile
+    @GetMapping("/mobile/{mobile}")
+    public ResponseEntity<UserDto> getUserByMobile(@PathVariable String mobile) {
+        return ResponseEntity.ok(userService.getUserByMobile(mobile));
+    }
+
+    // ✅ Update electricity bill only
+    @PatchMapping("/{id}/ebill")
+    public ResponseEntity<UserDto> updateUserEbill(@PathVariable Long id, @RequestParam Double ebill) {
+        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+    }
+
+    // ✅ Get allocated rooms
+    @GetMapping("/rooms")
+    public ResponseEntity<List<String>> getAllocatedRooms() {
+        List<String> allocatedRooms = userService.getAllUsers()
+                .stream()
+                .map(UserDto::getUserRoom)
+                .toList();
+        return ResponseEntity.ok(allocatedRooms);
+    }
+
+ // ✅ Mark bill as paid
+    @PostMapping("/{id}/pay")
+    public ResponseEntity<UserDto> markPaid(@PathVariable Long id) {
+        User user = userRepository.findById(id).orElseThrow();
+        user.setLastPaymentDate(LocalDate.now());
+        user.setPaymentStatus(true); // make sure your User entity has this field
+        userRepository.save(user);
+
+        UserDto dto = convertToDto(user);
+        return ResponseEntity.ok(dto);
+    }
+
+    // 🔄 Convert entity → DTO
+    private UserDto convertToDto(User user) {
+        UserDto dto = new UserDto();
+        dto.setUserId(user.getUserId());
+        dto.setUserName(user.getUserName());
+        dto.setUserRoom(user.getUserRoom());
+        dto.setUserMobile(user.getUserMobile());
+        dto.setUserEbill(user.getUserEbill());
+        dto.setLastPaymentDate(user.getLastPaymentDate());
+        dto.setPaymentStatus(user.getPaymentStatus());
+        return dto;
+    }
+}

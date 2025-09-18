@@ -1,0 +1,155 @@
+package com.pg.user.util;
+
+//
+//import java.io.ByteArrayInputStream;
+//import java.io.ByteArrayOutputStream;
+//import java.time.format.DateTimeFormatter;
+//
+//import com.itextpdf.text.Chunk;
+//import com.itextpdf.text.Document;
+//import com.itextpdf.text.Element;
+//import com.itextpdf.text.Font;
+//import com.itextpdf.text.FontFactory;
+//import com.itextpdf.text.Paragraph;
+//import com.itextpdf.text.pdf.PdfWriter;
+//import com.pg.user.dto.PaymentDto;
+//
+//public class InvoiceGenerator {
+//
+//    public static ByteArrayInputStream generateInvoice(PaymentDto payment) {
+//        try {
+//            Document document = new Document();
+//            ByteArrayOutputStream out = new ByteArrayOutputStream();
+//            PdfWriter.getInstance(document, out);
+//
+//            document.open();
+//
+//            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
+//            Paragraph title = new Paragraph("PG Payment Invoice", titleFont);
+//            title.setAlignment(Element.ALIGN_CENTER);
+//            document.add(title);
+//            document.add(Chunk.NEWLINE);
+//
+//            document.add(new Paragraph("Payment ID: " + payment.getPaymentId()));
+//            document.add(new Paragraph("User ID: " + payment.getUserId()));
+//            document.add(new Paragraph("User Name: " + payment.getUserName()));
+//            document.add(new Paragraph("Amount: ₹" + payment.getAmount()));
+//            
+//            // ✅ Include payment method in invoice
+//            document.add(new Paragraph("Payment Method: " + payment.getPaymentMethod()));
+//
+//            String formattedDate = payment.getPaymentDate() != null
+//                    ? payment.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+//                    : "N/A";
+//            document.add(new Paragraph("Date: " + formattedDate));
+//
+//            document.close();
+//            return new ByteArrayInputStream(out.toByteArray());
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error generating invoice PDF", e);
+//        }
+//    }
+//}
+
+
+
+
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.time.format.DateTimeFormatter;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.pg.user.dto.PaymentDto;
+
+public class InvoiceGenerator {
+
+    public static ByteArrayInputStream generateInvoice(PaymentDto payment) {
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Fonts (iText Font)
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 20);
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+            Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+            // Title
+            Paragraph title = new Paragraph("PG Hostel - Rent Invoice", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            document.add(title);
+
+            document.add(new Paragraph(" "));
+            document.add(new LineSeparator());
+            document.add(new Paragraph(" "));
+
+            // Invoice details table
+            PdfPTable table = new PdfPTable(2);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10f);
+            table.setSpacingAfter(10f);
+            table.setWidths(new float[] { 2f, 3f });
+
+            addCell(table, "Invoice No:", headerFont);
+            addCell(table, "P000" + (payment.getPaymentId() != null ? payment.getPaymentId() : ""), bodyFont);
+
+            addCell(table, "User ID:", headerFont);
+            addCell(table, String.valueOf(payment.getUserId()), bodyFont);
+
+            addCell(table, "User Name:", headerFont);
+            addCell(table, payment.getUserName() != null ? payment.getUserName() : "N/A", bodyFont);
+
+            addCell(table, "Amount Paid:", headerFont);
+            addCell(table, "₹ " + (payment.getAmount() != null ? payment.getAmount() : "0.00"), bodyFont);
+
+            addCell(table, "Payment Method:", headerFont);
+            addCell(table, payment.getPaymentMethod() != null ? payment.getPaymentMethod() : "N/A", bodyFont);
+
+            addCell(table, "Payment Date:", headerFont);
+            String formattedDate = (payment.getPaymentDate() != null)
+                    ? payment.getPaymentDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+                    : "N/A";
+            addCell(table, formattedDate, bodyFont);
+
+            document.add(table);
+
+            document.add(new Paragraph(" "));
+            document.add(new LineSeparator());
+            document.add(new Paragraph(" "));
+
+            // Footer
+            Paragraph footer = new Paragraph("Thank you for your payment!", bodyFont);
+            footer.setAlignment(Element.ALIGN_CENTER);
+            document.add(footer);
+
+            document.close();
+
+        } catch (Exception e) {
+            // better to log in real app
+            throw new RuntimeException("Error generating invoice PDF", e);
+        }
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    private static void addCell(PdfPTable table, String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        table.addCell(cell);
+    }
+}

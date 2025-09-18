@@ -1,0 +1,48 @@
+package com.pg.admin.service;
+
+import java.util.List;
+
+import com.pg.admin.dto.UserDto;
+/*
+public interface UserService {
+
+    // CRUD operations
+    UserDto createUser(UserDto userDto);
+    UserDto getUserById(Long id);
+    List<UserDto> getAllUsers();
+    UserDto updateUser(Long id, UserDto userDto);
+    void deleteUser(Long id);
+
+    // Additional operations
+    UserDto getUserByMobile(String mobile);
+    UserDto updateUserEbill(Long userId, Double ebill);
+    List<String> getAvailableRooms(); // fetch unallocated rooms
+}
+
+
+
+*/
+import com.pg.admin.entity.User;
+
+public interface UserService {
+
+	UserDto createUser(UserDto userDto);
+
+	UserDto getUserById(Long userId);
+
+	List<UserDto> getAllUsers();
+
+	UserDto updateUser(Long userId, UserDto dto);
+
+	void deleteUser(Long userId);
+
+	UserDto getUserByMobile(String mobile);
+
+	UserDto updateUserEbill(Long id, Double ebill);
+	
+	
+	 // Add this
+    User markBillPaid(Long userId); // set lastPaymentDate to now
+    
+    User markBillPaid(Long id, String method);
+}

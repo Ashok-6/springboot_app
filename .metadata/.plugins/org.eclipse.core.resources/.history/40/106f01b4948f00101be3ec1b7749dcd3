@@ -1,0 +1,9 @@
+// PaymentService.java (interface)
+package com.pg.user.service;
+
+import com.pg.user.dto.PaymentDto;
+
+public interface PaymentService {
+    PaymentDto makePayment(PaymentDto paymentDto);
+    PaymentDto getPayment(Long paymentId);
+}

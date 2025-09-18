@@ -1,0 +1,18 @@
+package com.pg.payment.dto;
+
+import java.time.LocalDateTime;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class PaymentDto {
+    private Long paymentId;
+    private Long userId;
+    private Double amount;
+    private String paymentMethod;
+    private LocalDateTime paymentDate;
+    
+    private String userName; // <-- add this
+}
