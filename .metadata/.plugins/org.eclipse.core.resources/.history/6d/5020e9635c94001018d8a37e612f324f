@@ -1,0 +1,64 @@
+@RestController
+@RequestMapping("/api/chat")
+public class ChatController {
+
+    private final UserRepository userRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${openai.api.key}")
+    private String openaiApiKey;
+
+    public ChatController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @PostMapping
+    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, String> request) {
+        String message = request.get("message");
+        String response;
+
+        // ✅ Check DB-related queries
+        if (message.toLowerCase().contains("list users")) {
+            List<User> users = userRepository.findAll();
+            response = "👥 Users:\n" + users.stream()
+                    .map(User::getUserName)
+                    .collect(Collectors.joining(", "));
+        } else if (message.toLowerCase().contains("rent")) {
+            // extract userId (basic demo logic)
+            String[] parts = message.split(" ");
+            if (parts.length > 1) {
+                String userId = parts[1];
+                User user = userRepository.findById(Long.parseLong(userId)).orElse(null);
+                if (user != null) {
+                    response = "💰 Rent for " + user.getUserName() + " is ₹" + user.getUserMonthlyRent();
+                } else {
+                    response = "⚠️ User not found!";
+                }
+            } else {
+                response = "Please specify user ID after 'rent'.";
+            }
+        } else {
+            // ✅ Forward to OpenAI GPT
+            String openAiUrl = "https://api.openai.com/v1/chat/completions";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(openaiApiKey);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("model", "gpt-4o-mini");
+            body.put("messages", List.of(Map.of("role", "user", "content", message)));
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+            try {
+                Map<String, Object> aiResponse = restTemplate.postForObject(openAiUrl, entity, Map.class);
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) aiResponse.get("choices");
+                response = (String) ((Map<String, Object>) choices.get(0).get("message")).get("content");
+            } catch (Exception e) {
+                response = "❌ Failed to get AI response.";
+            }
+        }
+
+        return ResponseEntity.ok(Map.of("reply", response));
+    }
+}

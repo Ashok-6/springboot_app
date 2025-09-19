@@ -235,8 +235,6 @@
 // });
 
 // export default UserList;
-
-
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -245,6 +243,8 @@ const API_BASE = "http://localhost:8081/api/admin/users";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   const location = useLocation();
 
   // Fetch users whenever the location changes
@@ -263,7 +263,11 @@ const UserList = () => {
   const handleDelete = (userId) => {
     axios
       .delete(`${API_BASE}/${userId}`)
-      .then(() => setUsers(users.filter((u) => u.userId !== userId)))
+      .then(() => {
+        setUsers(users.filter((u) => u.userId !== userId));
+        setShowConfirm(false);
+        setSelectedUser(null);
+      })
       .catch((err) => console.error("Error deleting user:", err));
   };
 
@@ -293,22 +297,61 @@ const UserList = () => {
                 <td>{user.userMobile}</td>
                 <td>₹{user.userEbill}</td>
                 <td style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-                  <Link to={`/view-user/${user.userId}`} style={linkStyle("#4CAF50")}>View</Link>
-                  <Link to={`/update-bill/${user.userId}`} style={linkStyle("#2575fc")}>Update Bill</Link>
-                  <button onClick={() => handleDelete(user.userId)} style={btnDelete}>Delete</button>
+                  <Link to={`/view-user/${user.userId}`} style={linkStyle("#4CAF50")}>
+                    View
+                  </Link>
+                  <Link to={`/update-bill/${user.userId}`} style={linkStyle("#2575fc")}>
+                    Update Bill
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowConfirm(true);
+                    }}
+                    style={btnDelete}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      {/* Custom Confirm Popup */}
+      {showConfirm && selectedUser && (
+        <div style={overlayStyle}>
+          <div style={popupStyle}>
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete <strong>{selectedUser.userName}</strong>?</p>
+            <div style={{ marginTop: "15px" }}>
+              <button
+                onClick={() => handleDelete(selectedUser.userId)}
+                style={btnDelete}
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirm(false);
+                  setSelectedUser(null);
+                }}
+                style={btnCancel}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
+// Styles
 const btnStyle = {
   padding: "5px 10px",
-  backgroundColor: "#4CAF50",
   color: "white",
   border: "none",
   borderRadius: "4px",
@@ -320,6 +363,12 @@ const btnDelete = {
   backgroundColor: "#f44336",
 };
 
+const btnCancel = {
+  ...btnStyle,
+  backgroundColor: "gray",
+  marginLeft: "10px",
+};
+
 const linkStyle = (bgColor) => ({
   padding: "5px 10px",
   background: bgColor,
@@ -327,5 +376,25 @@ const linkStyle = (bgColor) => ({
   textDecoration: "none",
   borderRadius: "4px",
 });
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const popupStyle = {
+  background: "white",
+  padding: "20px",
+  borderRadius: "10px",
+  textAlign: "center",
+  width: "300px",
+};
 
 export default UserList;
