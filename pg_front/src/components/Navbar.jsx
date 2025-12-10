@@ -1,21 +1,34 @@
 
+
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import ChatBot from "./ChatBot"; // 👈 Import ChatBot component
+import ChatBot from "./ChatBot";
 
 const Navbar = () => {
   const adminToken = localStorage.getItem("token");
-  const user = localStorage.getItem("user");
-  const parsedUser = user ? JSON.parse(user) : null;
+
+  // SAFE parse for `user` in localStorage
+  const userStr = localStorage.getItem("user");
+  let parsedUser = null;
+  if (userStr) {
+    try {
+      parsedUser = JSON.parse(userStr);
+    } catch  {
+      console.warn("Invalid JSON in localStorage 'user':", userStr);
+      // Remove the invalid value (optional) so future loads don't throw
+      localStorage.removeItem("user");
+      parsedUser = null;
+    }
+  }
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [paidThisMonth, setPaidThisMonth] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Fetch last payment for user
+  // Fetch last payment for user (only if parsedUser and userId exist)
   useEffect(() => {
-    if (parsedUser) {
+    if (parsedUser && parsedUser.userId) {
       axios
         .get(`http://localhost:8081/api/admin/users/${parsedUser.userId}`)
         .then((res) => {
@@ -74,19 +87,14 @@ const Navbar = () => {
       <nav
         style={{
           padding: "15px 35px",
-          //background: "rgba(37,117,252,0.8)", // transparent so bg is visible
           display: "flex",
           alignItems: "center",
           width: "100%",
-          position: "absolute", // sit on top
+          position: "absolute",
           top: 0,
           left: 0,
         }}
       >
-
-
-
-
         {/* Left Side - Home */}
         <div>
           <Link
@@ -112,7 +120,6 @@ const Navbar = () => {
                 📝 Register
               </Link>
 
-              {/* Login Dropdown */}
               <div style={{ position: "relative" }} ref={dropdownRef}>
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -229,7 +236,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* 👇 Floating ChatBot in bottom-right corner */}
+      {/* Floating ChatBot */}
       <div
         style={{
           position: "fixed",

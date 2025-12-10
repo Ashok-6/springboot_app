@@ -129,7 +129,7 @@ public class ChatController {
         StringBuilder sb = new StringBuilder();
         sb.append("📋 ").append(title).append("\n\n");
         sb.append(String.format("%-5s %-15s %-10s %-12s %-10s %-10s\n",
-                "ID", "Name", "Room", "Mobile", "Rent", "E-Bills"));
+                "ID", "Name", "Room", "Mobile", "Rent", "E-Bill"));
         sb.append("-------------------------------------------------------------\n");
 
         for (User u : users) {

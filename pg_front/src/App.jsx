@@ -9,41 +9,33 @@ import UserForm from "./components/UserForm";
 import PaymentInvoice from "./components/PaymentInvoice";
 import UpdateElectricityBill from "./components/UpdateElectricityBill";
 import UserList from "./components/UserList";
-import UserDetail from "./components/UserDetail"; // Import UserDetail
+import UserDetail from "./components/UserDetail";
+
+const AdminProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token"); // Admin token
+  return token ? children : <Navigate to="/login" replace />;
+};
+
+const UserProtectedRoute = ({ children }) => {
+  const user = localStorage.getItem("user");
+  try {
+    return user && JSON.parse(user) ? children : <Navigate to="/user-login" replace />;
+  } catch  {
+    // corrupted user entry in localStorage
+    localStorage.removeItem("user");
+    return <Navigate to="/user-login" replace />;
+  }
+};
 
 const App = () => {
-  // Admin protected route
-  const AdminProtectedRoute = ({ children }) => {
-    const token = localStorage.getItem("token"); // Admin token
-    return token ? children : <Navigate to="/login" replace />;
-  };
-
-  // User protected route
-  const UserProtectedRoute = ({ children }) => {
-    const user = localStorage.getItem("user");
-    return user && JSON.parse(user) ? children : <Navigate to="/user-login" replace />;
-  };
-
   return (
     <Router>
       <Navbar />
-
       <Routes>
-        Home
-        {/* <Route
-          path="/"
-          element={<h1 style={{ textAlign: "center", marginTop: "100px" }}>Welcome to AK Men's PG</h1>}
-        
-        /> */}
-
         <Route
           path="/"
           element={
-
-
             <div
-
-
               style={{
                 height: "100vh",
                 width: "100vw",
@@ -53,21 +45,17 @@ const App = () => {
                 backgroundRepeat: "no-repeat",
                 display: "flex",
                 justifyContent: "center",
-                //textAlign: "center",
                 alignItems: "flex-end",
                 margin: 0,
                 padding: 0,
               }}
             >
-
               <h1 style={{ color: "white", fontSize: "2rem", textShadow: "2px 2px 4px black" }}>
-                Welcome 
+                Welcome
               </h1>
             </div>
-
           }
         />
-
 
         {/* Admin Routes */}
         <Route path="/register" element={<RegisterAdmin />} />
