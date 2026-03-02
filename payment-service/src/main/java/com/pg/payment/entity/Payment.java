@@ -28,4 +28,7 @@ public class Payment {
 	private Double amount;
 	private LocalDateTime paymentDate;
 	private String paymentMethod;
+	
+	
+	//private PaymentStatus paymentStatus;
 }

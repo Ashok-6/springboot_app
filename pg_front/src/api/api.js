@@ -40,5 +40,7 @@ export const getAdminDetails = async () => {
 export const logoutAdmin = () => {
   localStorage.removeItem("token");
 };
+// src/api/api.js
 
-export default api;
+export const ADMIN_API = "http://localhost:8081/api/admin";
+export const PAYMENT_API = "http://localhost:8083/api/payments";

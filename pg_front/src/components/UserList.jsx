@@ -50,11 +50,38 @@ const UserList = () => {
               <th>Name</th>
               <th>Room</th>
               <th>Mobile</th>
+              <th>Status</th>
               <th>Electricity Bill</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
+            {/* {users.map((user) => (
+              <tr key={user.userId}>
+                <td>{user.userId}</td>
+                <td>{user.userName}</td>
+                <td>{user.userRoom}</td>
+                <td>{user.userMobile}</td>
+                <td>₹{user.userEbill}</td>
+                <td style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                  <Link to={`/view-user/${user.userId}`} style={linkStyle("#4CAF50")}>
+                    View
+                  </Link>
+                  <Link to={`/update-bill/${user.userId}`} style={linkStyle("#2575fc")}>
+                    Update Bill
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowConfirm(true);
+                    }}
+                    style={btnDelete}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))} */}
             {users.map((user) => (
               <tr key={user.userId}>
                 <td>{user.userId}</td>
@@ -62,6 +89,12 @@ const UserList = () => {
                 <td>{user.userRoom}</td>
                 <td>{user.userMobile}</td>
                 <td>₹{user.userEbill}</td>
+                <td style={{
+                  color: user.paymentStatus === "PAID" ? "green" : "red",
+                  fontWeight: "bold"
+                }}>
+                  {user.paymentStatus}
+                </td>
                 <td style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
                   <Link to={`/view-user/${user.userId}`} style={linkStyle("#4CAF50")}>
                     View
@@ -165,3 +198,5 @@ const popupStyle = {
 };
 
 export default UserList;
+
+

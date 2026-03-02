@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
+
 //@EnableFeignClients(basePackages = "com.pg.payment.feign")
 public class PaymentServiceApplication {
     public static void main(String[] args) {

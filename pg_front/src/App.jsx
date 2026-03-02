@@ -51,7 +51,7 @@ const App = () => {
               }}
             >
               <h1 style={{ color: "white", fontSize: "2rem", textShadow: "2px 2px 4px black" }}>
-                Welcome
+                Welcome 
               </h1>
             </div>
           }

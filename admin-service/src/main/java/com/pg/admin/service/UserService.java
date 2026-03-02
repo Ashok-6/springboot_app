@@ -1,8 +1,4 @@
 package com.pg.admin.service;
-
-
-
-
 import java.util.List;
 
 import com.pg.admin.dto.UserDto;
@@ -22,11 +18,10 @@ public interface UserService {
 	UserDto getUserByMobile(String mobile);
 
 	UserDto updateUserEbill(Long id, Double ebill);
+
+	UserDto updatePaymentStatus(Long id, String status);
 	
 
-////	 // Add this
-////    User markBillPaid(Long userId); // set lastPaymentDate to now
-////    
-////    User markBillPaid(Long id, String method);
-//}}
 }
+
+

@@ -1,0 +1,30 @@
+package com.pg.admin.service;
+
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+
+import com.pg.admin.entity.Bill;
+import com.pg.admin.entity.BillStatus;
+import com.pg.admin.repository.BillRepository;
+
+@Service
+@RequiredArgsConstructor
+public class BillServiceImpl implements BillService {
+
+    private final BillRepository billRepository;
+
+    @Override
+    public Bill createBill(Bill bill) {
+        bill.setStatus(BillStatus.DUE);
+        return billRepository.save(bill);
+    }
+
+    @Override
+    public void updateBillStatus(Long billId, String status) {
+        Bill bill = billRepository.findById(billId)
+                .orElseThrow(() -> new RuntimeException("Bill not found"));
+
+        bill.setStatus(BillStatus.valueOf(status));
+        billRepository.save(bill);
+    }
+}

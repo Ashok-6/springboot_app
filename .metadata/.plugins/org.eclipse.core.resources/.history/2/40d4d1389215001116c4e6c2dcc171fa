@@ -1,0 +1,27 @@
+package com.pg.admin.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import com.pg.admin.entity.Bill;
+import com.pg.admin.service.BillService;
+
+@RestController
+@RequestMapping("/api/admin/bills")
+@RequiredArgsConstructor
+public class BillController {
+
+    private final BillService billService;
+
+    @PostMapping("/create")
+    public Bill createBill(@RequestBody Bill bill) {
+        return billService.createBill(bill);
+    }
+
+    @PutMapping("/{billId}/status")
+    public String updateStatus(@PathVariable Long billId,
+                               @RequestParam String status) {
+        billService.updateBillStatus(billId, status);
+        return "Bill status updated to " + status;
+    }
+}

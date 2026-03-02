@@ -1,6 +1,5 @@
 package com.pg.admin.dto;
 
-import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +23,8 @@ public class UserDto {
     private String userMobile;   // ✅ added
     private String userPassword;   // ✅ include password
     
-    
-    
-   
+    private String paymentStatus;
 }
+
+
+

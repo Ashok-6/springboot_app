@@ -1,0 +1,10 @@
+package com.pg.admin.service;
+
+import com.pg.admin.entity.Bill;
+
+public interface BillService {
+
+    Bill createBill(Bill bill);
+
+    void updateBillStatus(Long billId, String status);
+}

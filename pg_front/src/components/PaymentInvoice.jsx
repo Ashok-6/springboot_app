@@ -1,200 +1,392 @@
 
 
-import React, { useState, useEffect } from "react";
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { ADMIN_API, PAYMENT_API } from "../api/api";
+
+// const PaymentInvoice = () => {
+//   const [user, setUser] = useState(null);
+//   const [paymentId, setPaymentId] = useState(null);
+//   const [message, setMessage] = useState("");
+
+//   useEffect(() => {
+//     const storedUser = JSON.parse(localStorage.getItem("user"));
+//     if (storedUser) {
+//       fetchUser(storedUser.userId);
+//     }
+//   }, []);
+
+//   const fetchUser = async (userId) => {
+//     try {
+//       const res = await axios.get(`${ADMIN_API}/users/${userId}`);
+//       setUser(res.data);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
+
+//   const handlePayment = async (method) => {
+//     try {
+//       // 1️⃣ Create payment
+//       const res = await axios.post(
+//         `${PAYMENT_API}/${user.userId}`,
+//         null,
+//         {
+//           params: { paymentMethod: method },
+//         }
+//       );
+
+//       setPaymentId(res.data.paymentId);
+
+//       // 2️⃣ Update status in Admin MS
+//       await axios.patch(
+//         `${ADMIN_API}/users/${user.userId}/status`,
+//         null,
+//         { params: { status: "PAID" } }
+//       );
+
+//       setMessage("✅ Payment Successful");
+
+//       // 3️⃣ Refresh user
+//       fetchUser(user.userId);
+
+//     } catch (err) {
+//       console.error(err);
+//       setMessage("❌ Payment Failed");
+//     }
+//   };
+
+//   const downloadInvoice = async () => {
+//     try {
+//       const res = await axios.get(
+//         `${PAYMENT_API}/${paymentId}/invoice/download`,
+//         { responseType: "blob" }
+//       );
+
+//       const url = window.URL.createObjectURL(new Blob([res.data]));
+//       const link = document.createElement("a");
+//       link.href = url;
+//       link.setAttribute("download", `invoice-${paymentId}.pdf`);
+//       document.body.appendChild(link);
+//       link.click();
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
+
+//   if (!user) return <p>Loading...</p>;
+
+//   const totalAmount =
+//     (user.userMonthlyRent || 0) + (user.userEbill || 0);
+
+//   return (
+//     <div style={{ textAlign: "center", marginTop: "100px" }}>
+//       <h2>Welcome {user.userName}</h2>
+
+//       <h3>Monthly Rent: ₹{user.userMonthlyRent}</h3>
+//       <h3>Electricity Bill: ₹{user.userEbill}</h3>
+//       <h2>Total: ₹{totalAmount}</h2>
+
+//       <h3>Status: {user.paymentStatus}</h3>
+
+//       {user.paymentStatus === "DUE" ? (
+//         <>
+//           <button onClick={() => handlePayment("UPI")}>UPI</button>
+//           <button onClick={() => handlePayment("CREDIT_CARD")}>
+//             Credit Card
+//           </button>
+//           <button onClick={() => handlePayment("NET_BANKING")}>
+//             Net Banking
+//           </button>
+//         </>
+//       ) : (
+//         <>
+//           <h3 style={{ color: "green" }}>Bill Paid ✅</h3>
+//           <button onClick={downloadInvoice}>
+//             Download Invoice
+//           </button>
+//         </>
+//       )}
+
+//       {message && <p>{message}</p>}
+//     </div>
+//   );
+// };
+
+// export default PaymentInvoice;
+
+
+
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import { ADMIN_API, PAYMENT_API } from "../api/api";
+
+// const PaymentInvoice = () => {
+//   const [user, setUser] = useState(null);
+//   const [paymentId, setPaymentId] = useState(null);
+//   const [message, setMessage] = useState("");
+
+//   useEffect(() => {
+//     const storedUser = localStorage.getItem("user");
+
+//     if (storedUser) {
+//       const parsed = JSON.parse(storedUser);
+//       fetchUser(parsed.userId);
+//     }
+//   }, []);
+
+//   const fetchUser = async (userId) => {
+//     try {
+//       const res = await axios.get(`${ADMIN_API}/users/${userId}`);
+//       setUser(res.data);
+//     } catch (err) {
+//       console.error("Error fetching user:", err);
+//     }
+//   };
+
+//   const handlePayment = async (method) => {
+//     try {
+//       const res = await axios.post(
+//         `${PAYMENT_API}/${user.userId}`,
+//         null,
+//         { params: { paymentMethod: method } }
+//       );
+
+//       setPaymentId(res.data.paymentId);
+//       setMessage("✅ Payment Successful");
+
+//       // Refresh user after payment
+//       fetchUser(user.userId);
+
+//     } catch (err) {
+//       console.error("Payment error:", err);
+//       setMessage("❌ Payment Failed");
+//     }
+//   };
+
+//   const downloadInvoice = async () => {
+//     try {
+//       const res = await axios.get(
+//         `${PAYMENT_API}/${paymentId}/invoice/download`,
+//         { responseType: "blob" }
+//       );
+
+//       const url = window.URL.createObjectURL(new Blob([res.data]));
+//       const link = document.createElement("a");
+//       link.href = url;
+//       link.setAttribute("download", `invoice-${paymentId}.pdf`);
+//       document.body.appendChild(link);
+//       link.click();
+
+//     } catch (err) {
+//       console.error("Download error:", err);
+//     }
+//   };
+
+//   if (!user) return <p style={{ marginTop: "100px" }}>Loading...</p>;
+
+//   const totalAmount =
+//     (user.userMonthlyRent || 0) + (user.userEbill || 0);
+
+//   return (
+//     <div style={{ textAlign: "center", marginTop: "100px" }}>
+//       <h2>Welcome {user.userName}</h2>
+
+//       <h3>Monthly Rent: ₹{user.userMonthlyRent}</h3>
+//       <h3>Electricity Bill: ₹{user.userEbill}</h3>
+//       <h2>Total: ₹{totalAmount}</h2>
+
+//       <h3>
+//         Status:{" "}
+//         <span
+//           style={{
+//             color: user.paymentStatus === "PAID" ? "green" : "red",
+//             fontWeight: "bold",
+//           }}
+//         >
+//           {user.paymentStatus}
+//         </span>
+//       </h3>
+
+//       {user.paymentStatus === "DUE" ? (
+//         <>
+//           <button onClick={() => handlePayment("UPI")}>UPI</button>
+//           <button onClick={() => handlePayment("CREDIT_CARD")}>
+//             Credit Card
+//           </button>
+//           <button onClick={() => handlePayment("NET_BANKING")}>
+//             Net Banking
+//           </button>
+//         </>
+//       ) : (
+//         <>
+//           <h3 style={{ color: "green" }}>Bill Paid ✅</h3>
+//           <button onClick={downloadInvoice}>
+//             Download Invoice
+//           </button>
+//         </>
+//       )}
+
+//       {message && <p>{message}</p>}
+//     </div>
+//   );
+// };
+
+// export default PaymentInvoice;
+
+
+
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-//import "./PaymentInvoice.css"; // CSS for tick animation
+import { ADMIN_API, PAYMENT_API } from "../api/api";
 
 const PaymentInvoice = () => {
   const [user, setUser] = useState(null);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentId, setPaymentId] = useState(null);
-  const [showTick, setShowTick] = useState(false);
-  const [isPaid, setIsPaid] = useState(false); // enables download
-  const [processing, setProcessing] = useState(false); // disables buttons
-  const [downloaded, setDownloaded] = useState(false); // disables invoice button
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      setUser(userData);
-      const rent = parseFloat(userData.userMonthlyRent || 0);
-      const ebill = parseFloat(userData.userEbill || 0);
-      setTotalAmount(rent + ebill);
+      const parsed = JSON.parse(storedUser);
+      fetchUser(parsed.userId);
     }
   }, []);
 
-  const handlePayment = async (method) => {
-    if (!user) return;
-
-    setProcessing(true);
-    setPaymentMessage("⏳ Processing payment...");
-    setShowTick(false);
-    setIsPaid(false);
-
+  const fetchUser = async (userId) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8082/api/payments/${user.userId}`,
+      const res = await axios.get(`${ADMIN_API}/users/${userId}`);
+      setUser(res.data);
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
+  };
+
+  const handlePayment = async (method) => {
+    try {
+      const res = await axios.post(
+        `${PAYMENT_API}/${user.userId}`,
         null,
         { params: { paymentMethod: method } }
       );
 
-      if (response.status === 200 && response.data.paymentId) {
-        setPaymentId(response.data.paymentId);
+      setPaymentId(res.data.paymentId);
+      setMessage("✅ Payment Successful");
+      fetchUser(user.userId);
 
-        // Show success after 5 seconds
-        setTimeout(() => {
-          setShowTick(true);
-          setPaymentMessage(`Payment successful! Method: ${response.data.paymentMethod}`);
-          setIsPaid(true);
-          setProcessing(false);
-
-          // Hide message & circle after 3 seconds
-          setTimeout(() => {
-            setShowTick(false);
-            setPaymentMessage("");
-          }, 3000);
-        }, 5000);
-      } else {
-        setPaymentMessage("❌ Payment failed!");
-        setProcessing(false);
-      }
-    } catch (error) {
-      console.error("Payment error:", error.response || error);
-      setPaymentMessage("❌ Payment failed!");
-      setProcessing(false);
+    } catch (err) {
+      console.error("Payment error:", err);
+      setMessage("❌ Payment Failed");
     }
   };
 
-  const handleDownloadInvoice = async () => {
-    if (!paymentId) {
-      setPaymentMessage("❌ Make a payment first!");
-      return;
-    }
-
+  const downloadInvoice = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:8082/api/payments/${paymentId}/invoice/download`,
+      const res = await axios.get(
+        `${PAYMENT_API}/${paymentId}/invoice/download`,
         { responseType: "blob" }
       );
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `invoice-${paymentId}.pdf`);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-
-      // Show download success message
-      setPaymentMessage("✅ Invoice downloaded successfully!");
-      setDownloaded(true); // disable invoice button
-
-      // Hide message after 3 seconds
-      setTimeout(() => setPaymentMessage(""), 3000);
-    } catch (error) {
-      console.error("Download error:", error.response || error);
-      setPaymentMessage("❌ Failed to download invoice!");
+    } catch (err) {
+      console.error("Download error:", err);
     }
   };
 
-  if (!user) {
-    return <p style={{ textAlign: "center" }}>Please login to make a payment.</p>;
-  }
+  if (!user) return <p style={{ textAlign: "center", marginTop: "100px" }}>Loading...</p>;
+
+  const totalAmount =
+    (user.userMonthlyRent || 0) + (user.userEbill || 0);
+
+  // 🎨 Styles
+  const containerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: "100px"
+  };
+
+  const cardStyle = {
+    background: "white",
+    padding: "30px",
+    borderRadius: "12px",
+    width: "400px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+    textAlign: "center"
+  };
+
+  const buttonStyle = {
+    padding: "8px 12px",
+    border: "none",
+    borderRadius: "6px",
+    background: "#2575fc",
+    color: "white",
+    cursor: "pointer",
+    margin: "5px",
+    transition: "0.3s"
+  };
+
+  const downloadStyle = {
+    padding: "10px 15px",
+    border: "none",
+    borderRadius: "6px",
+    background: "green",
+    color: "white",
+    cursor: "pointer",
+    marginTop: "15px"
+  };
 
   return (
     <div style={containerStyle}>
-      <h2>Payment for {user.userName}</h2>
-      <p><strong>Total Amount:</strong> ₹{totalAmount}</p>
+      <div style={cardStyle}>
+        <h2>Welcome {user.userName}</h2>
 
-      {/* Payment buttons */}
-      <div style={{ margin: "20px 0" }}>
-        {["CreditCard", "UPI", "NetBanking"].map((method) => (
-          <button
-            key={method}
-            onClick={() => handlePayment(method)}
+        <p><strong>Monthly Rent:</strong> ₹{user.userMonthlyRent}</p>
+        <p><strong>Electricity Bill:</strong> ₹{user.userEbill}</p>
+        <h3>Total: ₹{totalAmount}</h3>
+
+        <h3>
+          Status:{" "}
+          <span
             style={{
-              ...buttonStyle,
-              opacity: processing || isPaid ? 0.6 : 1,
-              cursor: processing || isPaid ? "not-allowed" : "pointer",
-              boxShadow: processing || isPaid ? "0 0 10px #999 inset" : "0 4px 6px rgba(0,0,0,0.2)"
+              color: user.paymentStatus === "PAID" ? "green" : "red",
+              fontWeight: "bold"
             }}
-            disabled={processing || isPaid}
           >
-            {method === "CreditCard" ? "💳 Credit/Debit Card" : method === "UPI" ? "📱 UPI" : "🏦 Net Banking"}
-          </button>
-        ))}
-      </div>
+            {user.paymentStatus}
+          </span>
+        </h3>
 
-      {/* Download invoice */}
-      <div style={{ marginBottom: "20px" }}>
-        <button
-          onClick={handleDownloadInvoice}
-          style={{
-            ...downloadButtonStyle,
-            opacity: isPaid && !downloaded ? 1 : 0.5,
-            cursor: isPaid && !downloaded ? "pointer" : "not-allowed",
-            boxShadow: isPaid && !downloaded ? "0 4px 6px rgba(0,0,0,0.2)" : "0 0 10px #999 inset"
-          }}
-          disabled={!isPaid || downloaded}
-        >
-          📄 Download Invoice
-        </button>
-      </div>
+        {user.paymentStatus === "DUE" ? (
+          <div>
+            <button style={buttonStyle} onClick={() => handlePayment("UPI")}>
+              UPI
+            </button>
+            <button style={buttonStyle} onClick={() => handlePayment("CREDIT_CARD")}>
+              Credit Card
+            </button>
+            <button style={buttonStyle} onClick={() => handlePayment("NET_BANKING")}>
+              Net Banking
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 style={{ color: "green" }}>Bill Paid ✅</h3>
+            <button style={downloadStyle} onClick={downloadInvoice}>
+              Download Invoice
+            </button>
+          </>
+        )}
 
-      {/* Payment message with tick */}
-      {paymentMessage && (
-        <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {showTick ? (
-            <div className="success-tick-container">
-              <div className="success-circle">
-                <div className="tick"></div>
-              </div>
-              <p style={{ fontSize: "18px", fontWeight: "bold", color: "green", marginTop: "10px" }}>
-                {paymentMessage}
-              </p>
-            </div>
-          ) : (
-            <p style={{ fontSize: "18px", fontWeight: "bold", color: "orange" }}>
-              {paymentMessage}
-            </p>
-          )}
-        </div>
-      )}
+        {message && <p style={{ marginTop: "15px", fontWeight: "bold" }}>{message}</p>}
+      </div>
     </div>
   );
 };
 
 export default PaymentInvoice;
-
-// Styles
-const containerStyle = {
-  maxWidth: "500px",
-  margin: "40px auto",
-  textAlign: "center",
-  padding: "20px",
-  border: "1px solid #ccc",
-  borderRadius: "8px",
-};
-
-const buttonStyle = {
-  margin: "5px",
-  padding: "10px 15px",
-  borderRadius: "25px",
-  border: "none",
-  backgroundColor: "#2575fc",
-  color: "#fff",
-  fontSize: "14px",
-  transition: "all 0.3s",
-};
-
-const downloadButtonStyle = {
-  padding: "10px 20px",
-  borderRadius: "25px",
-  border: "none",
-  backgroundColor: "#4CAF50",
-  color: "#fff",
-  fontSize: "14px",
-  transition: "all 0.3s",
-};

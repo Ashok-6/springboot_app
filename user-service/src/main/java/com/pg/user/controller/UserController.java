@@ -5,6 +5,8 @@ import java.util.Collections;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,11 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -37,34 +44,17 @@ public class UserController {
                     .body(Collections.singletonMap("message", e.getMessage()));
         }
     }
+    
+    
 }
     
 	    
 	    
 	    
 	    
-	    
-	   
-	   /* @PostMapping("/login")
-	    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
-	        return ResponseEntity.ok(userService.login(request.getUserName(), request.getPassword()));
-	    }*/
-	    
-
-	
-
-    
-    
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+

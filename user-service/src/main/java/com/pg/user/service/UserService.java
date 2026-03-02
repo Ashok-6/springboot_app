@@ -8,6 +8,10 @@ public interface UserService {
 	
 	  
 	  
+	  UserDto getUserById(Long id);
 	  
+	  
+	
 
 }
+

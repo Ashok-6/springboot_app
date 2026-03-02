@@ -1,7 +1,5 @@
 package com.pg.admin.entity;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -46,7 +44,9 @@ public class User {
 
     @Column(nullable = false)
     private Double userEbill;
-
+    
+    @Column(nullable = false)
+    private String paymentStatus; // DUE / PAID
 	
     
 	

@@ -1,91 +1,191 @@
 package com.pg.admin.controller;
 
+//import java.util.List;
+//
+//
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.web.bind.annotation.CrossOrigin;
+//import org.springframework.web.bind.annotation.DeleteMapping;
+//import org.springframework.web.bind.annotation.GetMapping;
+//import org.springframework.web.bind.annotation.PatchMapping;
+//import org.springframework.web.bind.annotation.PathVariable;
+//import org.springframework.web.bind.annotation.PostMapping;
+//import org.springframework.web.bind.annotation.PutMapping;
+//import org.springframework.web.bind.annotation.RequestBody;
+//import org.springframework.web.bind.annotation.RequestMapping;
+//import org.springframework.web.bind.annotation.RequestParam;
+//import org.springframework.web.bind.annotation.RestController;
+//
+//import com.pg.admin.dto.UserDto;
+//import com.pg.admin.service.UserService;
+//
+//import lombok.RequiredArgsConstructor;
+//
+//@RestController
+//@RequestMapping("/api/admin/users")
+//@CrossOrigin(origins = "http://localhost:5173")
+//@RequiredArgsConstructor
+//public class UserController {
+//	
+	
+	
+	//package com.pg.admin.controller;
 
+	import java.util.List;
 
+	import org.springframework.http.ResponseEntity;
+	import org.springframework.web.bind.annotation.*;
 
+	import com.pg.admin.dto.UserDto;
+	import com.pg.admin.service.UserService;
 
+	import lombok.RequiredArgsConstructor;
 
+	@RestController
+	@RequestMapping("/api/admin/users")
+	@CrossOrigin(origins = "http://localhost:5173")
+	@RequiredArgsConstructor
+	public class UserController {
 
-import java.util.List;
+	    private final UserService userService;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+	    // ================= CREATE USER =================
+	    @PostMapping
+	    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+	        return ResponseEntity.ok(userService.createUser(userDto));
+	    }
 
-import com.pg.admin.dto.UserDto;
-import com.pg.admin.service.UserService;
+	    // ================= GET USER BY ID =================
+	    @GetMapping("/{id}")
+	    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+	        return ResponseEntity.ok(userService.getUserById(id));
+	    }
 
-import lombok.RequiredArgsConstructor;
+	    // ================= UPDATE USER =================
+	    @PutMapping("/{id}")
+	    public ResponseEntity<UserDto> updateUser(
+	            @PathVariable Long id,
+	            @RequestBody UserDto userDto) {
 
-@RestController
-@RequestMapping("/api/admin/users")
-@CrossOrigin(origins = "http://localhost:5173")
-@RequiredArgsConstructor
-public class UserController {
+	        return ResponseEntity.ok(userService.updateUser(id, userDto));
+	    }
 
-    private final UserService userService;
+	    // ================= DELETE USER =================
+	    @DeleteMapping("/{id}")
+	    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+	        userService.deleteUser(id);
+	        return ResponseEntity.ok("User deleted successfully");
+	    }
 
-    // ✅ Create a new user
-    @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userService.createUser(userDto));
-    }
+	    // ================= GET ALL USERS =================
+	    @GetMapping
+	    public ResponseEntity<List<UserDto>> getAllUsers() {
+	        return ResponseEntity.ok(userService.getAllUsers());
+	    }
 
-    // ✅ Get a user by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
+	    /*/ ================= UPDATE PAYMENT STATUS (IMPORTANT) =================
+	    @PatchMapping("/{id}/status")
+	    public ResponseEntity<UserDto> updatePaymentStatus(
+	            @PathVariable Long id,
+	            @RequestParam String status) {
 
-    // ✅ Update a user
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userService.updateUser(id, userDto));
-    }
+	        UserDto updatedUser = userService.updatePaymentStatus(id, status);
+	        return ResponseEntity.ok(updatedUser);
+	    }*/
+	    @PutMapping("/{id}/status")
+	    public ResponseEntity<UserDto> updatePaymentStatus(
+	            @PathVariable Long id,
+	            @RequestParam String status) {
 
-    // ✅ Delete a user
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
+	        return ResponseEntity.ok(
+	                userService.updatePaymentStatus(id, status)
+	        );
+	    }
 
-    // ✅ Get all users
-    @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
+	    // ================= UPDATE ELECTRICITY BILL =================
+	    @PatchMapping("/{id}/ebill")
+	    public ResponseEntity<UserDto> updateUserEbill(
+	            @PathVariable Long id,
+	            @RequestParam Double ebill) {
 
-    // ✅ Get user by mobile
-    @GetMapping("/mobile/{mobile}")
-    public ResponseEntity<UserDto> getUserByMobile(@PathVariable String mobile) {
-        return ResponseEntity.ok(userService.getUserByMobile(mobile));
-    }
+	        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+	    }
 
-    // ✅ Update electricity bill only
-    @PatchMapping("/{id}/ebill")
-    public ResponseEntity<UserDto> updateUserEbill(@PathVariable Long id, @RequestParam Double ebill) {
-        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
-    }
+	    // ================= GET USER BY MOBILE =================
+	    @GetMapping("/mobile/{mobile}")
+	    public ResponseEntity<UserDto> getUserByMobile(
+	            @PathVariable String mobile) {
 
-    // ✅ Get allocated rooms
-    @GetMapping("/rooms")
-    public ResponseEntity<List<String>> getAllocatedRooms() {
-        List<String> allocatedRooms = userService.getAllUsers()
-                .stream()
-                .map(UserDto::getUserRoom)
-                .toList();
-        return ResponseEntity.ok(allocatedRooms);
-    }
+	        return ResponseEntity.ok(userService.getUserByMobile(mobile));
+	    }
+
+	    // ================= GET ALLOCATED ROOMS =================
+	    @GetMapping("/rooms")
+	    public ResponseEntity<List<String>> getAllocatedRooms() {
+
+	        List<String> allocatedRooms = userService.getAllUsers()
+	                .stream()
+	                .map(UserDto::getUserRoom)
+	                .toList();
+
+	        return ResponseEntity.ok(allocatedRooms);
+	    }
+	}
+
+//    private final UserService userService;
+//
+//    // ✅ Create a new user
+//    @PostMapping
+//    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+//        return ResponseEntity.ok(userService.createUser(userDto));
+//    }
+//
+//    // ✅ Get a user by ID
+//    @GetMapping("/{id}")
+//    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
+//        return ResponseEntity.ok(userService.getUserById(id));
+//    }
+//
+//    // ✅ Update a user
+//    @PutMapping("/{id}")
+//    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+//        return ResponseEntity.ok(userService.updateUser(id, userDto));
+//    }
+//
+//    // ✅ Delete a user
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+//        userService.deleteUser(id);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    // ✅ Get all users
+//    @GetMapping
+//    public ResponseEntity<List<UserDto>> getAllUsers() {
+//        return ResponseEntity.ok(userService.getAllUsers());
+//    }
+//
+//    // ✅ Get user by mobile
+//    @GetMapping("/mobile/{mobile}")
+//    public ResponseEntity<UserDto> getUserByMobile(@PathVariable String mobile) {
+//        return ResponseEntity.ok(userService.getUserByMobile(mobile));
+//    }
+//
+//    // ✅ Update electricity bill only
+//    @PatchMapping("/{id}/ebill")
+//    public ResponseEntity<UserDto> updateUserEbill(@PathVariable Long id, @RequestParam Double ebill) {
+//        return ResponseEntity.ok(userService.updateUserEbill(id, ebill));
+//    }
+//
+//    // ✅ Get allocated rooms
+//    @GetMapping("/rooms")
+////    public ResponseEntity<List<String>> getAllocatedRooms() {
+//        List<String> allocatedRooms = userService.getAllUsers()
+//                .stream()
+//                .map(UserDto::getUserRoom)
+//                .toList();
+//        return ResponseEntity.ok(allocatedRooms);
+//    }
 
 //    // ✅ Mark bill as paid
 //    @PostMapping("/{id}/pay")
@@ -127,5 +227,7 @@ public class UserController {
 //
 //        return ResponseEntity.ok(response);
 //    }
+//
 
-}
+
+

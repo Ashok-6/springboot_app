@@ -13,7 +13,7 @@
 
 
 .user-form-container, .login-container {
-  background: #fff;
+  background: #ffffff;
   padding: 30px 40px;
   border-radius: 12px;
   width: 100%;
@@ -22,16 +22,6 @@
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   border: 3px solid violet;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -260,14 +250,6 @@
 
 
 
-
-
-
-
-
-
-
-
 /* Container for the form */
 .user-form-container {
   max-width: 600px;
@@ -279,10 +261,6 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
 } 
-
-
-
-
 
 
 /* Form heading
@@ -486,10 +464,6 @@
 }
 
 
-
-
-
-
 .top-right {
   display: flex;
   justify-content: flex-end;
@@ -680,3 +654,6 @@
   border: none;
   cursor: pointer;
 }
+
+
+

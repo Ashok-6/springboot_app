@@ -1,5 +1,7 @@
 package com.pg.payment.controller;
 
+//package com.pg.payment.controller;
+
 import java.io.ByteArrayInputStream;
 import java.util.Base64;
 import java.util.HashMap;
@@ -10,6 +12,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,107 +30,116 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
+
 public class PaymentController {
 
-	private final PaymentService paymentService;
-	private final InvoiceService invoiceService;
+    private final PaymentService paymentService;
+    private final InvoiceService invoiceService;
 
-	/**
-	 * Create a new payment and generate invoice.
-	 */
-	@PostMapping("/{userId}")
-	public PaymentDto createPayment(@PathVariable Long userId, @RequestParam String paymentMethod) {
+    // ================= CREATE PAYMENT =================
+    @PostMapping("/{userId}")
+    public ResponseEntity<PaymentDto> createPayment(
+            @PathVariable Long userId,
+            @RequestParam String paymentMethod) {
 
-		// Create payment (amount calculated internally)
-		PaymentDto payment = paymentService.createPayment(userId, paymentMethod);
+        PaymentDto payment =
+                paymentService.createPayment(userId, paymentMethod);
 
-		// Generate PDF invoice and save
-		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
-		invoiceService.saveInvoice(payment.getPaymentId(), bis, "invoice-" + payment.getPaymentId() + ".pdf");
+        // Generate invoice PDF
+        ByteArrayInputStream bis =
+                InvoiceGenerator.generateInvoice(payment);
 
-		return payment;
-	}
+        invoiceService.saveInvoice(
+                payment.getPaymentId(),
+                bis,
+                "invoice-" + payment.getPaymentId() + ".pdf"
+        );
 
-	/*
-	 * ("/{userId}") public PaymentDto createPayment(
-	 * 
-	 * @PathVariable Long userId,
-	 * 
-	 * @RequestParam String paymentMethod,
-	 * 
-	 * @RequestParam Double amount) {
-	 * 
-	 * // Create payment PaymentDto payment = paymentService.createPayment(userId,
-	 * paymentMethod, amount);
-	 * 
-	 * // Generate PDF invoice and save ByteArrayInputStream bis =
-	 * InvoiceGenerator.generateInvoice(payment);
-	 * invoiceService.saveInvoice(payment.getPaymentId(), bis, "invoice-" +
-	 * payment.getPaymentId() + ".pdf");
-	 * 
-	 * return payment; }
-	 */
+        return ResponseEntity.ok(payment);
+    }
 
-	/**
-	 * Get payment by ID.
-	 */
-	@GetMapping("/{id}")
-	public PaymentDto getPaymentById(@PathVariable Long id) {
-		return paymentService.getPaymentById(id);
-	}
+    // ================= GET PAYMENT BY ID =================
+    @GetMapping("/{id}")
+    public ResponseEntity<PaymentDto> getPaymentById(
+            @PathVariable Long id) {
 
-	/**
-	 * Get all payments.
-	 */
-	@GetMapping
-	public List<PaymentDto> getAllPayments() {
-		return paymentService.getAllPayments();
-	}
+        return ResponseEntity.ok(
+                paymentService.getPaymentById(id)
+        );
+    }
 
-	/**
-	 * Download PDF invoice directly.
-	 */
-	@GetMapping("/{id}/invoice/download")
-	public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
-		PaymentDto payment = paymentService.getPaymentById(id);
-		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
+    // ================= GET ALL PAYMENTS =================
+    @GetMapping
+    public ResponseEntity<List<PaymentDto>> getAllPayments() {
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
+        return ResponseEntity.ok(
+                paymentService.getAllPayments()
+        );
+    }
 
-		return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
-				.body(new InputStreamResource(bis));
-	}
+    // ================= DOWNLOAD INVOICE =================
+    @GetMapping("/{id}/invoice/download")
+    public ResponseEntity<InputStreamResource> downloadInvoice(
+            @PathVariable Long id) {
 
-	/**
-	 * Swagger-friendly endpoint: returns Base64 PDF + payment info as JSON.
-	 */
-	@GetMapping("/{id}/invoice")
-	public Map<String, Object> getInvoiceForSwagger(@PathVariable Long id) {
-		PaymentDto payment = paymentService.getPaymentById(id);
-		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
+        PaymentDto payment =
+                paymentService.getPaymentById(id);
 
-		try {
-			byte[] pdfBytes = bis.readAllBytes();
-			String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+        ByteArrayInputStream bis =
+                InvoiceGenerator.generateInvoice(payment);
 
-			Map<String, Object> response = new HashMap<>();
-			response.put("paymentId", payment.getPaymentId());
-			response.put("userId", payment.getUserId());
-			response.put("amount", payment.getAmount());
-			response.put("paymentMethod", payment.getPaymentMethod());
-			response.put("paymentDate", payment.getPaymentDate());
-			response.put("invoicePdfBase64", base64Pdf);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(
+                "Content-Disposition",
+                "attachment; filename=invoice-" + id + ".pdf"
+        );
 
-			return response;
-		} catch (Exception e) {
-			throw new RuntimeException("Error generating invoice", e);
-		}
-	}
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(bis));
+    }
+
+    // ================= SWAGGER FRIENDLY INVOICE =================
+    @GetMapping("/{id}/invoice")
+    public ResponseEntity<Map<String, Object>> getInvoiceForSwagger(
+            @PathVariable Long id) {
+
+        PaymentDto payment =
+                paymentService.getPaymentById(id);
+
+        ByteArrayInputStream bis =
+                InvoiceGenerator.generateInvoice(payment);
+
+        try {
+            byte[] pdfBytes = bis.readAllBytes();
+            String base64Pdf =
+                    Base64.getEncoder().encodeToString(pdfBytes);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentId", payment.getPaymentId());
+            response.put("userId", payment.getUserId());
+            response.put("amount", payment.getAmount());
+            response.put("paymentMethod", payment.getPaymentMethod());
+            response.put("paymentDate", payment.getPaymentDate());
+            response.put("invoicePdfBase64", base64Pdf);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating invoice", e);
+        }
+    }
 }
 
+
+//
 //import java.io.ByteArrayInputStream;
+//import java.util.Base64;
+//import java.util.HashMap;
 //import java.util.List;
+//import java.util.Map;
 //
 //import org.springframework.core.io.InputStreamResource;
 //import org.springframework.http.HttpHeaders;
@@ -141,7 +153,6 @@ public class PaymentController {
 //import org.springframework.web.bind.annotation.RestController;
 //
 //import com.pg.payment.dto.PaymentDto;
-//import com.pg.payment.dto.PaymentResponse;
 //import com.pg.payment.service.InvoiceService;
 //import com.pg.payment.service.PaymentService;
 //import com.pg.payment.util.InvoiceGenerator;
@@ -153,57 +164,131 @@ public class PaymentController {
 //@RequiredArgsConstructor
 //public class PaymentController {
 //
-//    private final PaymentService paymentService;
-//    private final InvoiceService invoiceService;
+//	private final PaymentService paymentService;
+//	private final InvoiceService invoiceService;
 //
-//    @PostMapping("/{userId}")
-//    public PaymentDto createPayment(
-//            @PathVariable Long userId,
-//            @RequestParam String paymentMethod) {
+//	/**
+//	 * Create a new payment and generate invoice.
+//	 */
+//	@PostMapping("/{userId}")
+//	public PaymentDto createPayment(@PathVariable Long userId, @RequestParam String paymentMethod) {
 //
-//        PaymentDto payment = paymentService.createPayment(userId, paymentMethod);
+//		// Create payment (amount calculated internally)
+//		PaymentDto payment = paymentService.createPayment(userId, paymentMethod);
 //
-//        ByteArrayInputStream bis = invoiceService.generateInvoice(payment);
-//        invoiceService.saveInvoice(payment.getPaymentId(), bis, "invoice-" + payment.getPaymentId() + ".pdf");
+//		// Generate PDF invoice and save
+//		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
+//		invoiceService.saveInvoice(payment.getPaymentId(), bis, "invoice-" + payment.getPaymentId() + ".pdf");
 //
-//        return payment;
-//    }
+//		return payment;
+//	}
 //
-//    @GetMapping("/{id}")
-//    public PaymentDto getPaymentById(@PathVariable Long id) {
-//        return paymentService.getPaymentById(id);
-//    }
+//	/*
+//	 * ("/{userId}") public PaymentDto createPayment(
+//	 * 
+//	 * @PathVariable Long userId,
+//	 * 
+//	 * @RequestParam String paymentMethod,
+//	 * 
+//	 * @RequestParam Double amount) {
+//	 * 
+//	 * // Create payment PaymentDto payment = paymentService.createPayment(userId,
+//	 * paymentMethod, amount);
+//	 * 
+//	 * // Generate PDF invoice and save ByteArrayInputStream bis =
+//	 * InvoiceGenerator.generateInvoice(payment);
+//	 * invoiceService.saveInvoice(payment.getPaymentId(), bis, "invoice-" +
+//	 * payment.getPaymentId() + ".pdf");
+//	 * 
+//	 * return payment; }
+//	 */
 //
-//    @GetMapping
-//    public List<PaymentDto> getAllPayments() {
-//        return paymentService.getAllPayments();
-//    }
+//	/**
+//	 * Get payment by ID.
+//	 */
+//	@GetMapping("/{id}")
+//	public PaymentDto getPaymentById(@PathVariable Long id) {
+//		return paymentService.getPaymentById(id);
+//	}
 //
-//   /* @GetMapping("/{id}/invoice")
-//    public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
-//        Invoice invoice = invoiceService.getInvoiceByPaymentId(id);
+//	/**
+//	 * Get all payments.
+//	 */
+//	@GetMapping
+//	public List<PaymentDto> getAllPayments() {
+//		return paymentService.getAllPayments();
+//	}
 //
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Content-Disposition", "inline; filename=" + invoice.getFileName());
+//	/**
+//	 * Download PDF invoice directly.
+//	 */
+//	@GetMapping("/{id}/invoice/download")
+//	public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
+//		PaymentDto payment = paymentService.getPaymentById(id);
+//		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
 //
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentType(MediaType.APPLICATION_PDF)
-//                .body(new InputStreamResource(new ByteArrayInputStream(invoice.getPdfData())));
-//    }*/
-//    
-//    @GetMapping("/{id}/invoice")
-//    public ResponseEntity<InputStreamResource> downloadInvoice(@PathVariable Long id) {
-//        PaymentDto payment = paymentService.getPaymentById(id); // your DTO
-//        ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
+//		HttpHeaders headers = new HttpHeaders();
+//		headers.add("Content-Disposition", "attachment; filename=invoice-" + id + ".pdf");
 //
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("Content-Disposition", "inline; filename=invoice-" + id + ".pdf");
+//		return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
+//				.body(new InputStreamResource(bis));
+//	}
 //
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentType(MediaType.APPLICATION_PDF)
-//                .body(new InputStreamResource(bis));
-//    }
+//	/**
+//	 * Swagger-friendly endpoint: returns Base64 PDF + payment info as JSON.
+//	 */
+//	@GetMapping("/{id}/invoice")
+//	public Map<String, Object> getInvoiceForSwagger(@PathVariable Long id) {
+//		PaymentDto payment = paymentService.getPaymentById(id);
+//		ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
 //
+//		try {
+//			byte[] pdfBytes = bis.readAllBytes();
+//			String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+//
+//			Map<String, Object> response = new HashMap<>();
+//			response.put("paymentId", payment.getPaymentId());
+//			response.put("userId", payment.getUserId());
+//			response.put("amount", payment.getAmount());
+//			response.put("paymentMethod", payment.getPaymentMethod());
+//			response.put("paymentDate", payment.getPaymentDate());
+//			response.put("invoicePdfBase64", base64Pdf);
+//
+//			return response;
+//		} catch (Exception e) {
+//			throw new RuntimeException("Error generating invoice", e);
+//		}
+//	}
+//	
+//	
+//	
+//	
+//	
+//	
+//	@PostMapping("/{userId}")
+//	public PaymentDto createPayment(@PathVariable Long userId,
+//	                                @RequestParam Long billId,
+//	                                @RequestParam String paymentMethod) {
+//
+//	    PaymentDto payment =
+//	            paymentService.createPayment(userId, billId, paymentMethod);
+//
+//	    ByteArrayInputStream bis = InvoiceGenerator.generateInvoice(payment);
+//	    invoiceService.saveInvoice(payment.getPaymentId(), bis,
+//	            "invoice-" + payment.getPaymentId() + ".pdf");
+//
+//	    return payment;
+//	}
+//	
+//	
+//	
+//	
+//	
+//	
+//	
+//	
+//	
+//	
 //}
+
+

@@ -44,4 +44,9 @@ public class User {
 
     @Column(nullable = false)
     private Double userEbill;
+    
+    // 🔥 ADD THIS
+    @Column(nullable = false)
+    private String paymentStatus;
+   
 }

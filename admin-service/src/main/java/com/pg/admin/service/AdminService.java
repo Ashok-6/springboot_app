@@ -34,18 +34,4 @@ public interface AdminService {
 
 
 
-/*
-import com.pg.admin.dto.AdminDto;
-import com.pg.admin.dto.LoginRequest;
-import com.pg.admin.dto.LoginResponse;
 
-public interface AdminService {
-
-	AdminDto register(AdminDto dto, String rawPassword);
-
-	LoginResponse login(LoginRequest request);
-
-	AdminDto getAdminDetails(String adminName);
-
-
-}*/

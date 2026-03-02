@@ -1,17 +1,40 @@
 package com.pg.payment.service;
 
-import java.util.List;
+//import java.util.List;
+//
+//import com.pg.payment.dto.PaymentDto;
+//
+//public interface PaymentService {
+//
+//    PaymentDto createPayment(Long userId, String paymentMethod);
+//
+//    PaymentDto getPaymentById(Long paymentId);
+//
+//    List<PaymentDto> getAllPayments();
+//    
+//    
+//
+//    PaymentDto createPayment(Long userId, Long billId, String paymentMethod);
+    
+ //package com.pg.payment.service;
+
+    import java.util.List;
 
 import com.pg.payment.dto.PaymentDto;
 
-public interface PaymentService {
+    public interface PaymentService {
 
-    PaymentDto createPayment(Long userId, String paymentMethod);
+       
 
-    PaymentDto getPaymentById(Long paymentId);
+        PaymentDto getPaymentById(Long paymentId);
 
-    List<PaymentDto> getAllPayments();
-}
+        List<PaymentDto> getAllPayments();
+        PaymentDto createPayment(Long userId, String paymentMethod);
+    }
+    
+    
+    
+
 
 
 

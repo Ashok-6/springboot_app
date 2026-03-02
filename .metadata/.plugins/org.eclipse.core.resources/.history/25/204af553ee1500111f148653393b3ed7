@@ -1,0 +1,24 @@
+//package com.pg.admin.entity;
+//
+//import jakarta.persistence.*;
+//import lombok.*;
+//
+//@Entity
+//@Table(name = "bills")
+//@Data
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@Builder
+//public class Bill {
+//
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long billId;
+//
+//    private Long userId;
+//
+//    private Double amount;
+//
+//    @Enumerated(EnumType.STRING)
+//    private BillStatus status;
+//}

@@ -1,15 +1,19 @@
 package com.pg.payment.service;
 
+
+
+//package com.pg.payment.service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.pg.payment.dto.PaymentDto;
 import com.pg.payment.dto.UserDto;
 import com.pg.payment.entity.Payment;
-import com.pg.payment.feign.AdminClient; // ✅ use feign client
 import com.pg.payment.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,74 +22,258 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-	private final PaymentRepository paymentRepository;
-	private final AdminClient adminClient; // ✅ talk to admin-service
+    private final PaymentRepository paymentRepository;
+    private final RestTemplate restTemplate;
 
-	@Override
-	public PaymentDto createPayment(Long userId, String paymentMethod) {
-		// ✅ Fetch user details from Admin/User service using Feign
-		UserDto user = adminClient.getUserById(userId);
+    /*/ ================= CREATE PAYMENT =================
+  
+    	@Override
+    	public PaymentDto createPayment(Long userId, String paymentMethod) {
+        // 1️⃣ Save payment
+        Payment payment = Payment.builder()
+                .userId(userId)
+                .amount(1000.0) // you can calculate properly later
+                .paymentMethod(paymentMethod)
+                .paymentDate(LocalDateTime.now())
+                .build();
 
-		if (user == null) {
-			throw new RuntimeException("User not found with ID: " + userId);
-		}
+        Payment savedPayment = paymentRepository.save(payment);
 
-		// ✅ Calculate total = rent + electricity bill
-		Double totalAmount = (user.getUserMonthlyRent() != null ? user.getUserMonthlyRent() : 0.0)
-				+ (user.getUserEbill() != null ? user.getUserEbill() : 0.0);
+        // 🔥 2️⃣ Call Admin MS to update payment status
+        String adminUrl =
+                "http://localhost:8081/api/admin/users/"
+                + userId
+                + "/status?status=PAID";
+        String adminUrl =
+                "http://localhost:8081/api/admin/users/"
+                + userId
+                + "/status?status=PAID";
 
-		// ✅ Create payment entity
-		Payment payment = new Payment();
-		payment.setUserId(user.getUserId());
-		payment.setUserName(user.getUserName());
-		payment.setAmount(totalAmount);
-		payment.setPaymentMethod(paymentMethod);
-		payment.setPaymentDate(LocalDateTime.now());
+        //restTemplate.patchForObject(adminUrl, null, String.class);
+        restTemplate.put(adminUrl, null);
 
-		Payment savedPayment = paymentRepository.save(payment);
+        return mapToDto(savedPayment);
+    }*/
+    	
+    @Override
+    public PaymentDto createPayment(Long userId,
+                                    String paymentMethod) {
 
-		return mapToDto(savedPayment);
-	}
+        // 1️⃣ Fetch user from Admin MS
+        String userUrl = "http://localhost:8081/api/admin/users/" + userId;
 
-	/*
-	 * @Override public PaymentDto createPayment(Long userId, String paymentMethod,
-	 * Double amount) { // ✅ fetch user from admin-service UserDto user =
-	 * adminClient.getUserById(userId);
-	 * 
-	 * // ✅ create payment with username Payment payment = new Payment();
-	 * payment.setUserId(userId); payment.setUserName(user.getUserName()); //
-	 * username auto included payment.setAmount(amount);
-	 * payment.setPaymentMethod(paymentMethod);
-	 * payment.setPaymentDate(LocalDateTime.now());
-	 * 
-	 * Payment savedPayment = paymentRepository.save(payment);
-	 * 
-	 * return mapToDto(savedPayment); }
-	 */
+        UserDto user = restTemplate.getForObject(userUrl, UserDto.class);
 
-	@Override
-	public PaymentDto getPaymentById(Long paymentId) {
-		Payment payment = paymentRepository.findById(paymentId)
-				.orElseThrow(() -> new RuntimeException("Payment not found with ID: " + paymentId));
-		return mapToDto(payment);
-	}
+        if (user == null) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
 
-	@Override
-	public List<PaymentDto> getAllPayments() {
-		return paymentRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
-	}
+        // 2️⃣ Calculate total
+        Double totalAmount =
+                (user.getUserMonthlyRent() != null ? user.getUserMonthlyRent() : 0.0)
+                + (user.getUserEbill() != null ? user.getUserEbill() : 0.0);
 
-	private PaymentDto mapToDto(Payment payment) {
-		PaymentDto dto = new PaymentDto();
-		dto.setPaymentId(payment.getPaymentId());
-		dto.setUserId(payment.getUserId());
-		dto.setUserName(payment.getUserName());
-		dto.setAmount(payment.getAmount());
-		dto.setPaymentMethod(payment.getPaymentMethod());
-		dto.setPaymentDate(payment.getPaymentDate());
-		return dto;
-	}
+        // 3️⃣ Save payment
+        Payment payment = Payment.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())   // 🔥 FIXED HERE
+                .amount(totalAmount)
+                .paymentMethod(paymentMethod)
+                .paymentDate(LocalDateTime.now())
+                .build();
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        // 4️⃣ Update payment status to PAID
+        String statusUrl =
+                "http://localhost:8081/api/admin/users/"
+                + userId
+                + "/status?status=PAID";
+
+        restTemplate.put(statusUrl, null);
+
+        return mapToDto(savedPayment);
+    }
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    // ================= GET BY ID =================
+    @Override
+    public PaymentDto getPaymentById(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Payment not found"));
+
+        return mapToDto(payment);
+    }
+
+    // ================= GET ALL =================
+    @Override
+    public List<PaymentDto> getAllPayments() {
+        return paymentRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    // ================= MAPPER =================
+    private PaymentDto mapToDto(Payment payment) {
+        return PaymentDto.builder()
+                .paymentId(payment.getPaymentId())
+                .userId(payment.getUserId())
+                .amount(payment.getAmount())
+                .paymentMethod(payment.getPaymentMethod())
+                .paymentDate(payment.getPaymentDate())
+                .build();
+    }
 }
+
+
+
+
+
+//
+//import java.time.LocalDateTime;
+//import java.util.List;
+//import java.util.stream.Collectors;
+//
+//import org.springframework.stereotype.Service;
+//
+//import com.pg.payment.dto.PaymentDto;
+//import com.pg.payment.dto.UserDto;
+//import com.pg.payment.entity.Payment;
+//import com.pg.payment.feign.AdminClient; // ✅ use feign client
+//import com.pg.payment.repository.PaymentRepository;
+//
+//import lombok.RequiredArgsConstructor;
+//
+//@Service
+//@RequiredArgsConstructor
+//public class PaymentServiceImpl implements PaymentService {
+//
+//	private final PaymentRepository paymentRepository;
+//	private final AdminClient adminClient; // ✅ talk to admin-service
+//
+//	@Override
+//	public PaymentDto createPayment(Long userId, String paymentMethod) {
+//		// ✅ Fetch user details from Admin/User service using Feign
+//		UserDto user = adminClient.getUserById(userId);
+//
+//		if (user == null) {
+//			throw new RuntimeException("User not found with ID: " + userId);
+//		}
+//
+//		// ✅ Calculate total = rent + electricity bill
+//		Double totalAmount = (user.getUserMonthlyRent() != null ? user.getUserMonthlyRent() : 0.0)
+//				+ (user.getUserEbill() != null ? user.getUserEbill() : 0.0);
+//
+//		// ✅ Create payment entity
+//		Payment payment = new Payment();
+//		payment.setUserId(user.getUserId());
+//		payment.setUserName(user.getUserName());
+//		payment.setAmount(totalAmount);
+//		payment.setPaymentMethod(paymentMethod);
+//		payment.setPaymentDate(LocalDateTime.now());
+//
+//		Payment savedPayment = paymentRepository.save(payment);
+//
+//		return mapToDto(savedPayment);
+//	}
+//
+//	/*
+//	 * @Override public PaymentDto createPayment(Long userId, String paymentMethod,
+//	 * Double amount) { // ✅ fetch user from admin-service UserDto user =
+//	 * adminClient.getUserById(userId);
+//	 * 
+//	 * // ✅ create payment with username Payment payment = new Payment();
+//	 * payment.setUserId(userId); payment.setUserName(user.getUserName()); //
+//	 * username auto included payment.setAmount(amount);
+//	 * payment.setPaymentMethod(paymentMethod);
+//	 * payment.setPaymentDate(LocalDateTime.now());
+//	 * 
+//	 * Payment savedPayment = paymentRepository.save(payment);
+//	 * 
+//	 * return mapToDto(savedPayment); }
+//	 */
+//
+//	@Override
+//	public PaymentDto getPaymentById(Long paymentId) {
+//		Payment payment = paymentRepository.findById(paymentId)
+//				.orElseThrow(() -> new RuntimeException("Payment not found with ID: " + paymentId));
+//		return mapToDto(payment);
+//	}
+//
+//	@Override
+//	public List<PaymentDto> getAllPayments() {
+//		return paymentRepository.findAll().stream().map(this::mapToDto).collect(Collectors.toList());
+//	}
+//
+//	private PaymentDto mapToDto(Payment payment) {
+//		PaymentDto dto = new PaymentDto();
+//		dto.setPaymentId(payment.getPaymentId());
+//		dto.setUserId(payment.getUserId());
+//		dto.setUserName(payment.getUserName());
+//		dto.setAmount(payment.getAmount());
+//		dto.setPaymentMethod(payment.getPaymentMethod());
+//		dto.setPaymentDate(payment.getPaymentDate());
+//		return dto;
+//	}
+//	
+//	@Override
+//	public PaymentDto createPayment(Long userId,
+//	                                Long billId,
+//	                                String paymentMethod) {
+//
+//	    // 1️⃣ Fetch user from User MS
+//	    UserDto user = userClient.getUserById(userId);
+//
+//	    Double totalAmount =
+//	            (user.getUserMonthlyRent() != null ? user.getUserMonthlyRent() : 0.0)
+//	          + (user.getUserEbill() != null ? user.getUserEbill() : 0.0);
+//
+//	    Payment payment = Payment.builder()
+//	            .userId(user.getUserId())
+//	            .userName(user.getUserName())
+//	            .amount(totalAmount)
+//	            .paymentMethod(paymentMethod)
+//	            .paymentDate(LocalDateTime.now())
+//	            .build();
+//
+//	    Payment saved = paymentRepository.save(payment);
+//
+//	    // 🔥 Update Bill Status in Admin MS
+//	    billClient.updateBillStatus(billId, "PAID");
+//
+//	    return mapToDto(saved);
+//	}
+//	
+//	
+//	
+//	
+//	
+//}
+
+
+
+
+
+
+
+
+
 
 /*
  * 1 import java.time.LocalDateTime; import java.util.List; import

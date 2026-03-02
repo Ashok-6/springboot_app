@@ -1,6 +1,8 @@
 package com.pg.user.service;
 
 
+//package com.pg.user.service;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,73 +15,64 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-	
 
-	    private final UserRepository userRepository;
-	    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-	    @Override
-	    public UserDto login(String userName, String rawPassword) {
-	        User user = userRepository.findByUserName(userName)
-	                .orElseThrow(() -> new RuntimeException("User not found"));
+    // ================= LOGIN =================
+    @Override
+    public UserDto login(String userName, String rawPassword) {
 
-	        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
-	            throw new RuntimeException("Invalid username or password");
-	        }
+        User user = userRepository.findByUserName(userName)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-	        // Map to DTO (manual or ModelMapper)
-	        UserDto dto = new UserDto();
-	        dto.setUserId(user.getUserId());
-	        dto.setUserName(user.getUserName());
-	        dto.setUserRoom(user.getUserRoom());
-	        dto.setUserAadhar(user.getUserAadhar());
-	        dto.setUserPlace(user.getUserPlace());
-	        dto.setUserMonthlyRent(user.getUserMonthlyRent());
-	        dto.setUserEbill(user.getUserEbill());
-	        dto.setUserMobile(user.getUserMobile());
-	        return dto;
-	    }
-	}
+        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        return mapToDto(user);
+    }
+
+    // ================= GET USER BY ID =================
+    @Override
+    public UserDto getUserById(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return mapToDto(user);
+    }
+
+    // ================= COMMON MAPPING METHOD =================
+    private UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .userId(user.getUserId())
+                .userName(user.getUserName())
+                .userRoom(user.getUserRoom())
+                .userPlace(user.getUserPlace())
+                .userAadhar(user.getUserAadhar())
+                .userMonthlyRent(user.getUserMonthlyRent())
+                .userEbill(user.getUserEbill())
+                .userMobile(user.getUserMobile())
+                .build();
+    }
+}
 
 
 
-//    private final UserRepository userRepository;
-//    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//
-//    @Override
-//    public UserDto login(String userName, String rawPassword) {
-//        User user = userRepository.findByUserName(userName)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        // Compare raw password with hashed password in DB
-//        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
-//            throw new RuntimeException("Invalid credentials");
-//        }
-//
-//        // Map User entity to UserDto
-//        return UserDto.builder()
-//                .userId(user.getUserId())
-//                .userName(user.getUserName())
-//                .userRoom(user.getUserRoom())
-//                .userAadhar(user.getUserAadhar())
-//                .userPlace(user.getUserPlace())
-//                .userMonthlyRent(user.getUserMonthlyRent())
-//                .userEbill(user.getUserEbill())
-//                .userMobile(user.getUserMobile())
-//                .build();
-//    }
-//
-//	
-//}
+
+
+
+
+
+
+
+
+
+
 //
 //
-//
-//
-//
-//
-//
-//
-//
+//import org.springframework.security.crypto.password.PasswordEncoder;
 //import org.springframework.stereotype.Service;
 //
 //import com.pg.user.dto.UserDto;
@@ -91,28 +84,66 @@ public class UserServiceImpl implements UserService {
 //@Service
 //@RequiredArgsConstructor
 //public class UserServiceImpl implements UserService {
+//	
 //
-//    private final UserRepository userRepository;
+//	    private final UserRepository userRepository;
+//	    private final PasswordEncoder passwordEncoder;
 //
-//    @Override
-//    public UserDto login(String userName, String password) {
-//        User user = userRepository.findByUserName(userName)
-//                .orElseThrow(() -> new RuntimeException("User not found"));
+//	    @Override
+//	    public UserDto login(String userName, String rawPassword) {
+//	        User user = userRepository.findByUserName(userName)
+//	                .orElseThrow(() -> new RuntimeException("User not found"));
 //
-//        if (!user.getUserPassword().equals(password)) {
-//            throw new RuntimeException("Invalid credentials");
-//        }
+//	        if (!passwordEncoder.matches(rawPassword, user.getUserPassword())) {
+//	            throw new RuntimeException("Invalid username or password");
+//	        }
 //
-//        // ✅ Map to DTO (no password exposed)
-//        return UserDto.builder()
-//                .userId(user.getUserId())
-//                .userName(user.getUserName())
-//                .userRoom(user.getUserRoom())
-//                .userAadhar(user.getUserAadhar())
-//                .userPlace(user.getUserPlace())
-//                .userMobile(user.getUserMobile())
-//                .userMonthlyRent(user.getUserMonthlyRent())
-//                .userEbill(user.getUserEbill())
-//                .build();
-//    }
-//}
+//	        // Map to DTO (manual or ModelMapper)
+//	        UserDto dto = new UserDto();
+//	        dto.setUserId(user.getUserId());
+//	        dto.setUserName(user.getUserName());
+//	        dto.setUserRoom(user.getUserRoom());
+//	        dto.setUserAadhar(user.getUserAadhar());
+//	        dto.setUserPlace(user.getUserPlace());
+//	        dto.setUserMonthlyRent(user.getUserMonthlyRent());
+//	        dto.setUserEbill(user.getUserEbill());
+//	        dto.setUserMobile(user.getUserMobile());
+//	        return dto;
+//	    }
+//	    
+//	    
+//	    
+//	    
+//	    @Override
+//	    public UserDto getUserById(Long id) {
+//	        User user = userRepository.findById(id)
+//	                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//	        return UserDto.builder()
+//	                .userId(user.getUserId())
+//	                .userName(user.getUserName())
+//	                .userRoom(user.getUserRoom())
+//	                .userPlace(user.getUserPlace())
+//	                .userAadhar(user.getUserAadhar())
+//	                .userMonthlyRent(user.getUserMonthlyRent())
+//	                .userEbill(user.getUserEbill())
+//	                .userMobile(user.getUserMobile())
+//	                .build();
+//	    }
+//	    
+//	    
+//	    
+//   
+//	    
+//	}
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//

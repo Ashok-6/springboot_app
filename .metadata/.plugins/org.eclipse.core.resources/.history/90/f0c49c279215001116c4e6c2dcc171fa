@@ -1,0 +1,6 @@
+package com.pg.admin.entity;
+
+public enum BillStatus {
+    DUE,
+    PAID
+}
